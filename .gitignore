@@ -1,0 +1,74 @@
+# -----------------------------------------------------------------------------
+# Python: entornos, paquetes y cachés
+# -----------------------------------------------------------------------------
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Pruebas, cobertura y herramientas
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Cachés regenerables del proyecto y de herramientas web
+.cache/
+.firecrawl/
+*.pkl
+*.pickle
+
+# -----------------------------------------------------------------------------
+# Datos binarios grandes
+# Se conservan localmente. Ver DATOS.md para ubicación y distribución.
+# Los scripts .py dentro de estas carpetas sí pueden versionarse.
+# -----------------------------------------------------------------------------
+/5 series/*.xlsx
+/5 series/*.xls
+/51 series/*.xlsx
+/51 series/*.xls
+/PSH/*.xlsx
+/PSH/*.xls
+
+# Archivos temporales que Excel crea al abrir un libro
+~$*.xlsx
+~$*.xls
+
+# -----------------------------------------------------------------------------
+# Resultados regenerables
+# Se conserva resultados/Informe_intermitencia.pdf como entregable publicable.
+# -----------------------------------------------------------------------------
+/resultados/*.xlsx
+/resultados/figuras/
+
+# -----------------------------------------------------------------------------
+# Configuración local, credenciales y sistema operativo
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+
+# Editores
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Registros y temporales
+*.log
+*.tmp
+*.temp
