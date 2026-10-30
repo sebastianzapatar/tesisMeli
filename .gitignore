@@ -34,12 +34,12 @@ htmlcov/
 # Se conservan localmente. Ver DATOS.md para ubicación y distribución.
 # Los scripts .py dentro de estas carpetas sí pueden versionarse.
 # -----------------------------------------------------------------------------
-/5 series/*.xlsx
-/5 series/*.xls
-/51 series/*.xlsx
-/51 series/*.xls
-/PSH/*.xlsx
-/PSH/*.xls
+/datos/5 series/*.xlsx
+/datos/5 series/*.xls
+/datos/51 series/*.xlsx
+/datos/51 series/*.xls
+/codigo/PSH/*.xlsx
+/codigo/PSH/*.xls
 
 # Archivos temporales que Excel crea al abrir un libro
 ~$*.xlsx
@@ -47,10 +47,10 @@ htmlcov/
 
 # -----------------------------------------------------------------------------
 # Resultados regenerables
-# Se conserva resultados/Informe_intermitencia.pdf como entregable publicable.
+# Se conserva codigo/resultados/Informe_intermitencia.pdf como entregable publicable.
 # -----------------------------------------------------------------------------
-/resultados/*.xlsx
-/resultados/figuras/
+/codigo/resultados/*.xlsx
+/codigo/resultados/figuras/
 
 # -----------------------------------------------------------------------------
 # Configuración local, credenciales y sistema operativo

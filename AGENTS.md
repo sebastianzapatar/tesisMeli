@@ -4,16 +4,22 @@ Proyecto de tesis doctoral (Universidad EIA). Dimensionamiento de PV + BESS a
 partir de métricas de intermitencia (burstiness B y memory M) de series
 solares, con criterio económico. Autora: Melisa Tuirán. Director: Sebastián Zapata.
 
+**Estructura:** el código está en `codigo/` (los comandos de abajo se corren
+desde ahí), los datos en `datos/` y los documentos de revisión en `revision/`.
+Las rutas de este archivo son relativas a `codigo/`, salvo las de `revision/`
+y `datos/`.
+
 **Antes de hacer cualquier cosa, lee en este orden:**
 
-1. `REVISION_TESIS.md`: revisión del 2026-10-25. Cada tarea de abajo
+1. `revision/REVISION_TESIS.md`: revisión del 2026-10-25. Cada tarea de abajo
    referencia un ID de allí (P = propuesta, C = código).
-2. `BITACORA.md`: estado, decisiones y hallazgos anteriores.
-3. `config.yaml`: todos los parámetros. No escribas números mágicos en el código.
+2. `revision/BITACORA.md`: estado, decisiones y hallazgos anteriores.
+3. `codigo/config.yaml`: todos los parámetros. No escribas números mágicos en el código.
 
 ## Entorno
 
 ```bash
+cd codigo
 python3.12 -m venv .venv                      # ya existe si alguien lo creó
 ./.venv/bin/python -m pip install -e ".[dev,rapido,notebook]"
 ./.venv/bin/python -m pytest tests/ -q        # 31 tests, deben pasar siempre
@@ -22,9 +28,9 @@ python3.12 -m venv .venv                      # ya existe si alguien lo creó
 ```
 
 - Python 3.11–3.12. Con 3.13+ puede que numba no tenga wheels.
-- **Los datos NO están en el repositorio** (ver `DATOS.md`). Los pasos 01–07
-  necesitan `51 series/df_series_todas_las_subestaciones.xlsx`,
-  `PSH/PSH_resultados.xlsx` y los archivos de `5 series/`. Si faltan, trabaja con
+- **Los datos NO están en el repositorio** (ver `datos/DATOS.md`). Los pasos 01–07
+  necesitan `datos/51 series/df_series_todas_las_subestaciones.xlsx`,
+  `datos/51 series/PSH_resultados.xlsx` y `datos/51 series/5 series GHI juntas.xlsx`. Si faltan, trabaja con
   datos sintéticos y tests, y dilo en tu reporte. **Nunca inventes resultados de
   las 51 series.**
 

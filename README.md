@@ -5,14 +5,17 @@ de intermitencia (burstiness *B* y memory *M*) de las series de irradiancia,
 con criterio económico.
 
 > **Para retomar el trabajo desde otro computador, lee
-> [`BITACORA.md`](BITACORA.md)**: contiene el estado, las decisiones, los
+> [`revision/BITACORA.md`](revision/BITACORA.md)**: contiene el estado, las decisiones, los
 > hallazgos y los comandos de instalación.
 
 ---
 
 ## Instalación
 
+Todos los comandos se corren desde la carpeta `codigo/`.
+
 ```bash
+cd codigo
 python3.12 -m venv .venv
 ./.venv/bin/python -m pip install -e ".[dev,rapido,notebook]"
 ./.venv/bin/python -m pytest tests/ -q      # 31 tests
@@ -35,7 +38,7 @@ simulación es ~100× más lenta.
 ./.venv/bin/python pipeline/07_informe.py
 ```
 
-Todos los parámetros están en [`config.yaml`](config.yaml). **No hay
+Todos los parámetros están en [`codigo/config.yaml`](codigo/config.yaml). **No hay
 números mágicos en el código**: para cambiar un supuesto se edita ese
 archivo y se vuelve a correr.
 
@@ -51,7 +54,7 @@ archivo y se vuelve a correr.
 | `06_figuras` | Figuras para la tesis | `resultados/figuras/*.{png,pdf}` |
 | `07_informe` | Informe técnico autocontenido | `resultados/Informe_intermitencia.pdf` |
 
-El cuaderno [`Modelo_intermitencia_explicado.ipynb`](Modelo_intermitencia_explicado.ipynb)
+El cuaderno [`codigo/Modelo_intermitencia_explicado.ipynb`](codigo/Modelo_intermitencia_explicado.ipynb)
 permite recorrer, recalcular y mostrar el análisis de forma interactiva. Para
 abrirlo:
 
@@ -97,18 +100,30 @@ batería, así que hay que comparar a planta común para aislar el efecto.
 ## Estructura
 
 ```
-config.yaml            todos los parámetros
-src/intermitencia/     el paquete (ver BITACORA.md para el detalle de cada módulo)
-pipeline/              scripts numerados
-tests/                 pytest
-legacy/                los 7 scripts originales, sin modificar
-resultados/            salidas y figuras
+Entrega 1 … Entrega 6/       material de cada entrega de la tesis
+articulos/                   artículos publicados (revisión sistemática)
+codigo/
+  config.yaml                todos los parámetros
+  src/intermitencia/         el paquete
+  pipeline/                  scripts numerados
+  tests/                     pytest
+  experimentos/              experimentos que no requieren datos
+  figuras_tesis/             figuras de los capítulos de la tesis
+  legacy/                    los 7 scripts originales, sin modificar
+  resultados/                salidas y figuras
+datos/
+  51 series/                 series de GHI (los Excel no se versionan)
+  DATOS.md                   procedencia, control de calidad y cómo obtener los datos
+revision/
+  REVISION_TESIS.md          revisión de la tesis
+  BITACORA.md                estado, decisiones y hallazgos
+  docs/                      fuentes de costos y documentos de apoyo
 ```
 
-Los datos crudos (261 MB) permanecen en `5 series/`, `51 series/` y `PSH/`.
-No se movieron; `config.yaml` apunta a ellos. Los Excel están excluidos de Git:
-consulta [`DATOS.md`](DATOS.md) para saber cuáles son realmente necesarios y
-cómo compartirlos sin inflar el repositorio.
+Los datos crudos están en `datos/51 series/`; `codigo/config.yaml` apunta a
+ellos. Los Excel están excluidos de Git: consulta [`datos/DATOS.md`](datos/DATOS.md)
+para saber cuáles son realmente necesarios y cómo compartirlos sin inflar el
+repositorio.
 
 ## Advertencia sobre los costos
 

@@ -16,15 +16,15 @@ proyecto:
 
 # ---------------------------------------------------------------------
 # RUTAS
-# Relativas a la raíz del proyecto (donde está este archivo).
-# Los datos crudos NO se mueven de su ubicación original.
+# Relativas a la carpeta codigo/ (donde está este archivo).
+# Los datos crudos están en ../datos/ y NO se versionan (ver datos/DATOS.md).
 # ---------------------------------------------------------------------
 rutas:
-  series_51:      "51 series/df_series_todas_las_subestaciones.xlsx"
-  series_5:       "51 series/5 series GHI juntas.xlsx"
-  series_ghi_psh: "51 series/df_series_todas_las_subestaciones con GHI.xlsx"
-  psh_51:         "51 series/PSH_resultados.xlsx"
-  tienda_5:       "51 series/resultados_cuenta_tienda (2).xlsx"
+  series_51:      "../datos/51 series/df_series_todas_las_subestaciones.xlsx"
+  series_5:       "../datos/51 series/5 series GHI juntas.xlsx"
+  series_ghi_psh: "../datos/51 series/df_series_todas_las_subestaciones con GHI.xlsx"
+  psh_51:         "../datos/51 series/PSH_resultados.xlsx"
+  tienda_5:       "../datos/51 series/resultados_cuenta_tienda (2).xlsx"
 
   salida:  "resultados"
   figuras: "resultados/figuras"
