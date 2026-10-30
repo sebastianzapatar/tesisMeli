@@ -200,6 +200,9 @@ def main() -> None:
     opt = pd.read_excel(sal / "04_optimos.xlsx").set_index("Serie")
     kappa = pd.read_excel(sal / "05_kappa.xlsx").set_index("Serie")
     coef = pd.read_excel(sal / "05_sustituto_coeficientes.xlsx").set_index("index")
+    reglas_detalle = pd.read_excel(sal / "08_reglas_operacion.xlsx")
+    reglas_resumen = pd.read_excel(sal / "08_reglas_operacion_resumen.xlsx")
+    reglas_sens = pd.read_excel(sal / "08_sensibilidad_resumen.xlsx")
 
     gen_media = diag["gen_media_MW"]
     techo = curvas.groupby("Serie")["lpsp"].min()
@@ -208,6 +211,31 @@ def main() -> None:
     r_b = np.corrcoef(comp["B"], comp["B_legacy"])[0, 1]
     r_m = np.corrcoef(comp["M"], comp["M_legacy"])[0, 1]
     r2_ley = kappa["r2_ley_exponencial"].median()
+
+    # --- derivadas para la Sección 7 (objetivo 3: escenarios de operación) ---
+    NOMBRES_COL_REGLA = {"R1": "R1", "R2": "R2", "R3": "R3", "R4": "R4", "R5": "R5"}
+    piv_lpsp = reglas_detalle.pivot(index="Serie", columns="regla", values="lpsp")
+    piv_cobertura = reglas_detalle.pivot(index="Serie", columns="regla", values="cobertura_deficit")
+    piv_vertida = reglas_detalle.pivot(index="Serie", columns="regla", values="frac_vertida")
+    piv_ciclos = reglas_detalle.pivot(index="Serie", columns="regla", values="ciclos_equivalentes")
+
+    def _fila_regla(regla: str) -> pd.Series:
+        return reglas_resumen[reglas_resumen["regla"] == regla].iloc[0]
+
+    r1_fila = _fila_regla("R1")
+
+    def _param_usado(regla: str, nombre_param: str):
+        sub = reglas_detalle[reglas_detalle["regla"] == regla]
+        col = f"param_{nombre_param}"
+        if col not in sub.columns:
+            return None
+        val = sub[col].dropna()
+        return val.iloc[0] if len(val) else None
+
+    soc_res_usado = _param_usado("R2", "soc_res")
+    ventana_usada = _param_usado("R3", "ventana_horaria")
+    w_usado = _param_usado("R4", "ventana_suavizado_h")
+    lmin_usado = _param_usado("R5", "l_min_h")
 
     doc = SimpleDocTemplate(
         str(sal / "Informe_intermitencia.pdf"), pagesize=A4,
@@ -561,9 +589,195 @@ def main() -> None:
         "cobra sentido.", e["cuerpo"]))
 
     # =================================================================
-    # 7. PENDIENTES
+    # 7. ESCENARIOS DE OPERACION (OBJETIVO 3)
     # =================================================================
-    C.append(Paragraph("7. Qué falta y qué hay que decidir", e["h1"]))
+    C.append(PageBreak())
+    C.append(Paragraph("7. Escenarios de operacion del BESS (objetivo 3)", e["h1"]))
+
+    C.append(Paragraph(
+        "Las secciones 1 a 6 resuelven los objetivos 1 y 2: que tan intermitente "
+        "es cada serie y que tan grande debe ser la bateria. Esta seccion resuelve "
+        "el objetivo 3, una pregunta distinta: una vez que la bateria ya tiene el "
+        "tamano optimo de la Seccion 3 (sin volver a dimensionarla), como deberia "
+        "cargarse y descargarse hora a hora. Todos los resultados de las secciones "
+        "anteriores usan implicitamente la regla mas simple posible &mdash; cargar "
+        "con cualquier excedente, descargar ante cualquier deficit &mdash;, llamada "
+        "aqui <b>R1, despacho directo</b>. Esta seccion la compara contra cuatro "
+        "reglas alternativas, a la misma capacidad ya optimizada de cada serie, sin "
+        "cambiar el tamano de la bateria en ningun caso.", e["cuerpo"]))
+
+    C.append(Paragraph("Las cinco reglas evaluadas", e["h2"]))
+    C.append(tabla([
+        ["Regla", "Idea central", "Parametro usado"],
+        ["R1 &mdash; Despacho directo",
+         "Linea base: reacciona 1:1 al balance instantaneo", "&mdash;"],
+        ["R2 &mdash; Reserva minima de SOC",
+         "Descarga solo hasta un piso operativo por encima del SOC minimo",
+         f"SOC_res = {soc_res_usado:.2f}" if soc_res_usado is not None else "&mdash;"],
+        ["R3 &mdash; Ventana horaria de descarga",
+         "Solo descarga dentro de una franja horaria fija",
+         f"{ventana_usada} h" if ventana_usada is not None else "&mdash;"],
+        ["R4 &mdash; Aplanamiento del perfil",
+         "Persigue la media movil del balance, no el deficit en si",
+         f"W = {w_usado:.0f} h" if w_usado is not None else "&mdash;"],
+        ["R5 &mdash; Bloques continuos",
+         "Prioriza cargar en corridas largas de excedente",
+         f"L_min = {lmin_usado:.0f} h" if lmin_usado is not None else "&mdash;"],
+    ], anchos=[5.2 * cm, 8 * cm, 3.3 * cm], alinear_derecha_desde=99))
+    C.append(Spacer(1, 10))
+
+    C.append(Paragraph(
+        f"Evaluado sobre las {reglas_detalle['Serie'].nunique()} series, a la "
+        "capacidad ya dimensionada en la Seccion 3 de cada una.", e["nota"]))
+
+    # -----------------------------------------------------------------
+    # 7.1 Comparacion principal (mediana sobre las series)
+    # -----------------------------------------------------------------
+    C.append(Paragraph("7.1 Comparacion de las cinco reglas", e["h2"]))
+    C.append(Paragraph(
+        "Cada regla se evalua con los mismos cinco indicadores: la LPSP y la "
+        "cobertura de deficit (que tan confiable es), la fraccion de energia "
+        "vertida (que tan bien se aprovecha el excedente), los ciclos "
+        "equivalentes (una aproximacion al desgaste de la bateria) y la "
+        "suavidad de la rampa neta (relevante sobre todo para R4). El valor "
+        "reportado es la mediana sobre las series evaluadas.", e["cuerpo"]))
+
+    filas_comp = [["Regla", "LPSP", "Cobertura deficit", "Vertimiento",
+                    "Ciclos equiv.", "Suavidad rampa [MW]"]]
+    for regla in ["R1", "R2", "R3", "R4", "R5"]:
+        f = _fila_regla(regla)
+        filas_comp.append([
+            regla,
+            f"{f['lpsp_p50']:.3f}",
+            f"{f['cobertura_deficit_p50']:.3f}",
+            f"{f['frac_vertida_p50']:.3f}",
+            f"{f['ciclos_equivalentes_p50']:.1f}",
+            f"{f['suavidad_rampa_mw_p50']:.2f}",
+        ])
+    C.append(tabla(filas_comp, anchos=[1.8*cm, 2.6*cm, 3.4*cm, 2.8*cm, 2.6*cm, 3.3*cm]))
+    C.append(Spacer(1, 10))
+
+    C.extend(figura(figs / "F8_comparacion_reglas_operacion.png",
+                    "<b>Figura 8.</b> Comparacion de las cinco reglas de despacho, "
+                    "a la capacidad ya optimizada de cada serie. Mediana sobre las "
+                    "series evaluadas; las barras de error muestran el rango "
+                    "p10&ndash;p90.", e))
+
+    # -----------------------------------------------------------------
+    # 7.2 Cada regla frente a R1
+    # -----------------------------------------------------------------
+    C.append(Paragraph("7.2 Cada regla frente a la linea base (R1)", e["h2"]))
+
+    def _texto_delta_lpsp(regla: str, delta: float) -> str:
+        n_series = len(piv_lpsp)
+        mejora = int((piv_lpsp[regla] < piv_lpsp["R1"]).sum())
+        empeora = int((piv_lpsp[regla] > piv_lpsp["R1"]).sum())
+        if abs(delta) < 0.0005:
+            direccion = "practicamente identica a la de R1"
+        elif delta < 0:
+            direccion = f"<b>mejor</b> que R1 en {mejora} de {n_series} series"
+        else:
+            direccion = f"peor que R1 en {empeora} de {n_series} series"
+        return direccion
+
+    for regla, etiqueta in [
+        ("R2", "Reserva minima de SOC"),
+        ("R3", "Ventana horaria de descarga"),
+        ("R4", "Aplanamiento del perfil"),
+        ("R5", "Bloques continuos"),
+    ]:
+        f = _fila_regla(regla)
+        d_lpsp = f["lpsp_p50"] - r1_fila["lpsp_p50"]
+        d_vertida = f["frac_vertida_p50"] - r1_fila["frac_vertida_p50"]
+        d_ciclos = f["ciclos_equivalentes_p50"] - r1_fila["ciclos_equivalentes_p50"]
+        d_rampa = f["suavidad_rampa_mw_p50"] - r1_fila["suavidad_rampa_mw_p50"]
+        direccion_lpsp = _texto_delta_lpsp(regla, d_lpsp)
+
+        texto = (
+            f"<b>{regla} &mdash; {etiqueta}.</b> LPSP {direccion_lpsp} "
+            f"(mediana {d_lpsp:+.4f}). Vertimiento {d_vertida:+.4f}, ciclos "
+            f"equivalentes {d_ciclos:+.1f}, suavidad de rampa {d_rampa:+.2f} MW, "
+            "todos frente a R1."
+        )
+        C.append(Paragraph(texto, e["cuerpo"]))
+
+    C.append(Paragraph(
+        "Ninguna regla domina en todos los indicadores a la vez: el ejercicio no "
+        "busca declarar una &laquo;ganadora&raquo;, sino dejar explicito el "
+        "costo &mdash;en vertimiento o en ciclos&mdash; de cada punto adicional de "
+        "confiabilidad, o el ahorro en desgaste de bateria que se paga con "
+        "confiabilidad. Cual regla conviene depende de si el criterio operativo "
+        "prioriza la confiabilidad, la vida util de la bateria o el cumplimiento "
+        "de una franja horaria fija.", e["alerta"]))
+
+    # -----------------------------------------------------------------
+    # 7.3 Distribucion completa (no solo la mediana)
+    # -----------------------------------------------------------------
+    C.append(Paragraph("7.3 Distribucion completa entre series", e["h2"]))
+    C.append(Paragraph(
+        "La mediana puede esconder que una regla funcione muy distinto segun el "
+        "sitio. La tabla siguiente reporta el rango p10&ndash;p90 de LPSP y de "
+        "ciclos equivalentes para cada regla, sobre las series evaluadas.",
+        e["cuerpo"]))
+
+    filas_dist = [["Regla", "LPSP p10", "LPSP p50", "LPSP p90",
+                    "Ciclos p10", "Ciclos p50", "Ciclos p90"]]
+    for regla in ["R1", "R2", "R3", "R4", "R5"]:
+        f = _fila_regla(regla)
+        filas_dist.append([
+            regla,
+            f"{f['lpsp_p10']:.3f}", f"{f['lpsp_p50']:.3f}", f"{f['lpsp_p90']:.3f}",
+            f"{f['ciclos_equivalentes_p10']:.1f}" if "ciclos_equivalentes_p10" in f else "&mdash;",
+            f"{f['ciclos_equivalentes_p50']:.1f}",
+            f"{f['ciclos_equivalentes_p90']:.1f}" if "ciclos_equivalentes_p90" in f else "&mdash;",
+        ])
+    C.append(tabla(filas_dist, anchos=[1.6*cm, 2.3*cm, 2.3*cm, 2.3*cm, 2.4*cm, 2.4*cm, 2.4*cm]))
+    C.append(Spacer(1, 10))
+
+    # -----------------------------------------------------------------
+    # 7.4 Sensibilidad a los parametros propios de cada regla
+    # -----------------------------------------------------------------
+    C.append(PageBreak())
+    C.append(Paragraph("7.4 Sensibilidad a los parametros propios de cada regla", e["h2"]))
+    C.append(Paragraph(
+        "R2, R3, R4 y R5 tienen, cada una, un parametro propio (SOC_res, la "
+        "ventana horaria, W y L_min, respectivamente). Se varia cada uno, uno a "
+        "la vez, manteniendo los demas en su valor por defecto, sobre un "
+        "subconjunto representativo de series &mdash;no las 51&mdash;, ya que el "
+        "motor de simulacion recorre cada serie hora por hora y la grilla "
+        "completa sobre todas las series es costosa.", e["cuerpo"]))
+
+    filas_sens_tabla = [["Regla", "Parametro", "Valor", "LPSP", "Ciclos equiv."]]
+    for regla in ["R2", "R3", "R4", "R5"]:
+        sub = reglas_sens[reglas_sens["regla"] == regla].sort_values("orden_valor")
+        for _, fila_s in sub.iterrows():
+            filas_sens_tabla.append([
+                regla,
+                fila_s["parametro"],
+                str(fila_s["valor_parametro"]),
+                f"{fila_s['lpsp_p50']:.3f}",
+                f"{fila_s['ciclos_equivalentes_p50']:.1f}",
+            ])
+    C.append(tabla(filas_sens_tabla, anchos=[1.6*cm, 3.4*cm, 3*cm, 2.5*cm, 3*cm]))
+    C.append(Spacer(1, 10))
+
+    C.extend(figura(figs / "F9_sensibilidad_reglas_operacion.png",
+                    "<b>Figura 9.</b> Sensibilidad de cada regla a su propio "
+                    "parametro (mediana sobre las series evaluadas). El eje "
+                    "vertical es el indicador que ese parametro afecta mas "
+                    "directamente en cada regla.", e))
+
+    C.append(Paragraph(
+        "Esta grilla de sensibilidad es un punto de partida, no la busqueda "
+        "final: el valor por defecto de cada parametro (Seccion 7, tabla de las "
+        "cinco reglas) se fijo en un orden de magnitud fisicamente razonable, no "
+        "optimizado. Ajustar estos parametros para cada aplicacion especifica "
+        "queda como trabajo futuro.", e["nota"]))
+
+    # =================================================================
+    # 8. PENDIENTES
+    # =================================================================
+    C.append(Paragraph("8. Qué falta y qué hay que decidir", e["h1"]))
 
     C.append(Paragraph("Decisiones que no son técnicas", e["h2"]))
     C.append(Paragraph(

@@ -21,10 +21,10 @@ proyecto:
 # ---------------------------------------------------------------------
 rutas:
   series_51:      "51 series/df_series_todas_las_subestaciones.xlsx"
-  series_5:       "5 series/5 series GHI juntas.xlsx"
-  series_ghi_psh: "PSH/df_series_todas_las_subestaciones con GHI.xlsx"
-  psh_51:         "PSH/PSH_resultados.xlsx"
-  tienda_5:       "5 series/resultados_cuenta_tienda (2).xlsx"
+  series_5:       "51 series/5 series GHI juntas.xlsx"
+  series_ghi_psh: "51 series/df_series_todas_las_subestaciones con GHI.xlsx"
+  psh_51:         "51 series/PSH_resultados.xlsx"
+  tienda_5:       "51 series/resultados_cuenta_tienda (2).xlsx"
 
   salida:  "resultados"
   figuras: "resultados/figuras"
@@ -77,8 +77,10 @@ bess:
   duracion_h: 4.0            # E/P; define la potencia a partir de la energía
   limitar_potencia: true     # <-- el código anterior calculaba la potencia y NUNCA la usaba
 
-  eff_carga: 0.95            # 0.95 * 0.95 = 0.9025 round-trip
-  eff_descarga: 0.95
+  # NREL/TP-6A40-93281: "The round-trip efficiency is chosen to be 85%".
+  # sqrt(0,85) = 0,922 por etapa. Valor anterior: 0,95 por etapa (0,9025).
+  eff_carga: 0.922
+  eff_descarga: 0.922
 
   soc_min_frac: 0.10         # profundidad de descarga máxima 90 %
   soc_max_frac: 1.00
@@ -116,26 +118,47 @@ intermitencia:
 # ---------------------------------------------------------------------
 # ECONOMÍA
 # ---------------------------------------------------------------------
-# REVISAR TODOS ESTOS VALORES. Son placeholders de orden de magnitud
-# (NREL ATB 2024, escala utility, Colombia). No los publiques sin
-# reemplazarlos por tus propias fuentes citadas.
+# Valores con fuente citada (T03, 27-oct-2026). Fuentes completas y
+# conversiones en docs/fuentes_costos.md.
+# Año dólar: FV en USD de las cifras de NREL ATB 2024 (benchmark 2023);
+# BESS en USD 2024 (NREL 2025). La diferencia de año dólar (~5-7 %)
+# queda dentro del análisis de sensibilidad de ±30 % (T11).
 economia:
-  tasa_descuento: 0.10           # REVISAR: WACC real
+  # Documento CREG 901 355 de 2026 (soporte de la Res. CREG 101 101 de 2026),
+  # Tabla 2 y §5.1.1.3: WACC real antes de impuestos del 11,5 % fijado en la
+  # Res. CREG 083 de 2008, propuesto como tasa de descuento para proyectos del STN.
+  # Es real: coherente con costos en moneda constante.
+  tasa_descuento: 0.115
   vida_proyecto_anios: 25
 
-  capex_pv_usd_kw: 1100.0        # REVISAR: USD/kW_ac instalado
-  capex_bess_energia_usd_kwh: 250.0   # REVISAR: USD/kWh
-  capex_bess_potencia_usd_kw: 150.0   # REVISAR: USD/kW (inversor/PCS)
+  # NREL ATB 2024, Utility-Scale PV: "$1.56/WAC overnight capital cost
+  # (plus grid connection cost) in 2023" (100 MWdc, seguimiento a 1 eje, ILR 1,34).
+  capex_pv_usd_kw: 1560.0        # USD/kW_ac
+  # Cole, Ramasamy y Turan (2025), Cost Projections for Utility-Scale Battery
+  # Storage: 2025 Update, NREL/TP-6A40-93281, Fig. 2 (2024, USD 2024):
+  # costo de energía 241 USD/kWh y de potencia 372 USD/kW.
+  # Chequeo: 241*4 + 372 = 1336 USD/kW = 334 USD/kWh (Tabla 2, 2024, caso medio).
+  capex_bess_energia_usd_kwh: 241.0
+  capex_bess_potencia_usd_kw: 372.0
 
-  opex_pv_usd_kw_anio: 18.0      # REVISAR
-  opex_bess_usd_kwh_anio: 6.0    # REVISAR
+  # NREL ATB 2024, Utility-Scale PV: "fixed O&M (FOM) cost of $22/kWAC-yr for 2023".
+  opex_pv_usd_kw_anio: 22.0
+  # NREL/TP-6A40-93281: "FOM ... is 4% of the $/kW capacity cost for a 4-hour
+  # battery" -> 0,04 * 1336 USD/kW = 53,4 USD/kW-año = 13,36 USD/kWh-año.
+  opex_bess_usd_kwh_anio: 13.36
 
-  vida_bess_anios: 12            # REVISAR: reemplazo/augmentation a mitad de vida
-  ciclos_vida: 6000              # REVISAR: ciclos equivalentes completos
+  # NREL/TP-6A40-93281: "The lifetime we selected is 15 years".
+  vida_bess_anios: 15
+  # Derivado, no tomado de una tabla: NREL supone ~1 ciclo diario durante
+  # 15 años (ATB 2024, Utility-Scale Battery Storage) -> 365 * 15 = 5475.
+  ciclos_vida: 5475
 
-  # Valor de la energía no suministrada. En Colombia, usar los escalones
-  # del costo incremental de racionamiento de la CREG (resolución vigente).
-  voll_usd_mwh: 600.0            # REVISAR: citar la resolución CREG vigente
+  # Valor de la energía no suministrada = Costo Incremental Operativo de
+  # Racionamiento (CRO) de la UPME: 1.881,33 COP/kWh para junio de 2026
+  # (citado en Documento CREG 901 377 de 2026, nota 28), convertido con la
+  # TRM del 30-jun-2026 (3.443,59 COP/USD): 1881,33 / 3443,59 = 0,5463 USD/kWh.
+  # PENDIENTE: confirmar en la página de la UPME a qué escalón corresponde.
+  voll_usd_mwh: 546.3
 
   # Ingreso perdido por vertimiento (si aplica). 0 = no se penaliza.
   costo_vertimiento_usd_mwh: 0.0

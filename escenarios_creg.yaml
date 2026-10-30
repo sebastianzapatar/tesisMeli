@@ -1,0 +1,61 @@
+# =====================================================================
+# ESCENARIOS DE OPERACIÓN — Resolución CREG 101 113 de 2026
+# ---------------------------------------------------------------------
+# Lo usa pipeline/09_escenarios_creg.py (objetivo específico 3).
+# Se deja aparte de config.yaml para no alterar los pasos 01-08.
+# Valores marcados  # REVISAR  deben justificarse con una fuente.
+# =====================================================================
+
+# Precio de bolsa nacional horario (XM: Sinergox / pydataxm, métrica
+# "PrecBolsNaci"). Si el archivo no existe, el paso 09 corre solo los
+# escenarios que no necesitan precio (M0 y M3 con reglas R1-R5).
+precios:
+  ruta: "datos_mercado/precio_bolsa_xm.xlsx"   # REVISAR: descárgalo y ponlo aquí
+  columna_fecha: "Fecha"
+  unidad: "COP/kWh"
+  trm_cop_usd: 4000.0          # REVISAR: TRM promedio del periodo de precios
+  # Escenarios de hidrología: años de precios por fase ENSO (ONI).
+  # Cada escenario construye un perfil típico (mes, día de semana, hora).
+  escenarios_precio:
+    neutro: [2019, 2025]             # REVISAR contra el ONI de NOAA
+    nino:   [2015, 2016, 2023, 2024]
+    nina:   [2020, 2021, 2022]
+
+modalidades: ["M0", "M1", "M2", "M3"]
+politicas:   ["R1", "R2", "R3", "R4", "R5", "P1", "LP"]
+
+# Parámetros de las reglas (iguales a los del paso 08)
+reglas:
+  soc_res: 0.30
+  ventana_horaria: [18, 22]
+  ventana_suavizado_h: 6
+  l_min_h: 3
+  k_horas_arbitraje: 4
+
+regulatorio:
+  rpf_frac: 0.03               # art. 71 b.15: >= 3 % de la potencia del inversor
+  rpf_duracion_min: 1.0        # art. 71 b.15: sostenible >= 1 minuto
+  # M1 recurso híbrido: potencia máxima declarada como fracción de P_PV*.
+  # 1.0 = sin recorte; < 1 = capacidad de transporte asignada menor
+  # que la planta (art. 70: hibridar no puede aumentar la capacidad).
+  p_max_declarada_frac_ppv: [1.0, 0.8, 0.6]
+  precio_contrato_usd_mwh: 0.0 # REVISAR (solo informativo)
+  # M3 activo de red
+  e_funcion_horas: 2.0         # REVISAR: energía de la función = h x P_BESS (art. 15)
+  eficiencia_minima: 0.85      # REVISAR: la fija la UPME (art. 6)
+  max_horas_indisp: 175        # art. 16
+  limite_importacion_frac_demanda: 0.5   # REVISAR: capacidad de red hacia el nodo
+  ventana_recarga_red: [0, 5]  # horas valle para recargar desde la red
+  consumo_aux_frac: 0.005      # REVISAR: consumo auxiliar (% de P nominal)
+
+lp:
+  horizonte_h: 48              # art. 59 d: el día t considera el día t-1
+  compromiso_h: 24
+  peso_funcion_usd_mwh: 50.0
+  # Para no correr el LP sobre 25 años x 51 series (lento), se usa en
+  # un subconjunto representativo de series y años:
+  n_series: 10
+  anios: [2015, 2016, 2017]
+
+# Series sobre las que correr todo (vacío = las 51)
+series: []

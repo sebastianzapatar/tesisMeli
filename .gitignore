@@ -72,3 +72,6 @@ Thumbs.db
 *.log
 *.tmp
 *.temp
+
+# Tesis en LaTeX: solo local
+tesis_latex/

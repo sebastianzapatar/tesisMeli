@@ -1,0 +1,178 @@
+# =====================================================================
+# CONFIGURACIÓN ÚNICA DEL PROYECTO
+# ---------------------------------------------------------------------
+# Todos los parámetros del modelo viven aquí. Ningún script debe tener
+# números mágicos. Si quieres cambiar un supuesto, se cambia en este
+# archivo y se vuelve a correr el pipeline.
+#
+# Los valores marcados con  # REVISAR  son valores por defecto de orden
+# de magnitud razonable, pero DEBES reemplazarlos por los de tus propias
+# fuentes (NREL ATB 2024, CREG, cotizaciones) antes de publicar.
+# =====================================================================
+
+proyecto:
+  nombre: "Dimensionamiento PV+BESS con métricas de intermitencia"
+  semilla: 42
+
+# ---------------------------------------------------------------------
+# RUTAS
+# Relativas a la raíz del proyecto (donde está este archivo).
+# Los datos crudos NO se mueven de su ubicación original.
+# ---------------------------------------------------------------------
+rutas:
+  series_51:      "51 series/df_series_todas_las_subestaciones.xlsx"
+  series_5:       "51 series/5 series GHI juntas.xlsx"
+  series_ghi_psh: "51 series/df_series_todas_las_subestaciones con GHI.xlsx"
+  psh_51:         "51 series/PSH_resultados.xlsx"
+  tienda_5:       "51 series/resultados_cuenta_tienda (2).xlsx"
+
+  salida:  "resultados"
+  figuras: "resultados/figuras"
+  cache:   ".cache"
+
+# ---------------------------------------------------------------------
+# DEMANDA
+# ---------------------------------------------------------------------
+demanda:
+  potencia_mw: 20.0        # demanda plana a cubrir
+
+# ---------------------------------------------------------------------
+# PLANTA FOTOVOLTAICA
+# ---------------------------------------------------------------------
+# La generación se modela como:
+#     P(t) = potencia_mw * (GHI(t) / 1000) * performance_ratio
+#
+# NOTA IMPORTANTE SOBRE COMPATIBILIDAD CON EL CÓDIGO ANTERIOR
+# -----------------------------------------------------------
+# El código original usaba:  P(t) = GHI(t) * area_total * eficiencia / 1e6
+# con area_total = 469 888 m2 y eficiencia = 0.17, es decir un factor de
+# 0.0798796 MW por cada W/m2. Eso equivale a un pico de 79.88 MW a
+# 1000 W/m2 --- NO a los 100 MW nominales.
+#
+# La causa: un módulo de 550 W sobre 2.279 x 1.134 m tiene una eficiencia
+# real de 21.3 %, no de 17 %. Al multiplicar el ÁREA de los módulos por
+# 0.17 se subestima la potencia pico en un 20 %.
+#
+# En la práctica ese 20 % de subestimación equivale a haber aplicado, sin
+# declararlo, un performance ratio de 0.799. Por eso con
+# performance_ratio = 0.80 los resultados nuevos coinciden con los viejos
+# dentro del 0.15 %, pero ahora el supuesto es explícito y defendible.
+#
+# Si necesitas reproducir EXACTAMENTE los resultados anteriores, pon
+# modelo_legacy: true (usa el factor 0.0798796 tal cual).
+planta:
+  potencia_mw: 100.0
+  performance_ratio: 0.80   # REVISAR: incluye temperatura, inversor, suciedad, cableado, disponibilidad
+  modelo_legacy: false      # true = reproduce bit a bit el modelo antiguo
+
+  # Solo informativos / para la tabla de parámetros de la tesis
+  modulo_potencia_w: 550.0
+  modulo_ancho_m: 2.279
+  modulo_alto_m: 1.134
+
+# ---------------------------------------------------------------------
+# ALMACENAMIENTO (BESS)
+# ---------------------------------------------------------------------
+bess:
+  duracion_h: 4.0            # E/P; define la potencia a partir de la energía
+  limitar_potencia: true     # <-- el código anterior calculaba la potencia y NUNCA la usaba
+
+  eff_carga: 0.95            # 0.95 * 0.95 = 0.9025 round-trip
+  eff_descarga: 0.95
+
+  soc_min_frac: 0.10         # profundidad de descarga máxima 90 %
+  soc_max_frac: 1.00
+  soc_inicial_frac: 0.50     # arranque a media carga (menos sesgo que arrancar vacío)
+
+  autodescarga_frac_h: 0.0   # REVISAR: ~2e-5 /h si quieres modelarla
+
+# ---------------------------------------------------------------------
+# BARRIDO DE CAPACIDADES (curvas capacidad-confiabilidad)
+# ---------------------------------------------------------------------
+barrido:
+  pct_min: 0.02              # antes 0.05, pero se recortaba a 0.10 por un clip
+  pct_max: 0.60              # antes 0.30, lo que truncaba la curva y sesgaba el objetivo
+  pct_paso: 0.01
+
+# ---------------------------------------------------------------------
+# MÉTRICAS DE INTERMITENCIA (B y M)
+# ---------------------------------------------------------------------
+intermitencia:
+  # Sobre qué se definen los eventos:
+  #   "deficit"  -> corridas contiguas con balance < 0   (RECOMENDADO)
+  #   "excedente"-> corridas contiguas con balance > 0
+  base_evento: "deficit"
+
+  # Resolución temporal de la serie de eventos:
+  #   "horaria" -> eventos sobre la serie horaria
+  #   "diaria"  -> eventos sobre déficit diario (elimina el ciclo diurno)
+  resolucion: "horaria"
+
+  umbral_mw: 0.0             # un evento empieza cuando balance < -umbral_mw
+  min_eventos: 30            # antes 5: insuficiente para estimar sigma y una correlación
+  corregir_tamano_finito: true   # Kim & Jo (2016): quita el sesgo por número de eventos
+  metodo_memory: "pearson"   # "pearson" (Goh & Barabási) o "spearman"
+
+# ---------------------------------------------------------------------
+# ECONOMÍA
+# ---------------------------------------------------------------------
+# REVISAR TODOS ESTOS VALORES. Son placeholders de orden de magnitud
+# (NREL ATB 2024, escala utility, Colombia). No los publiques sin
+# reemplazarlos por tus propias fuentes citadas.
+economia:
+  tasa_descuento: 0.10           # REVISAR: WACC real
+  vida_proyecto_anios: 25
+
+  capex_pv_usd_kw: 1100.0        # REVISAR: USD/kW_ac instalado
+  capex_bess_energia_usd_kwh: 250.0   # REVISAR: USD/kWh
+  capex_bess_potencia_usd_kw: 150.0   # REVISAR: USD/kW (inversor/PCS)
+
+  opex_pv_usd_kw_anio: 18.0      # REVISAR
+  opex_bess_usd_kwh_anio: 6.0    # REVISAR
+
+  vida_bess_anios: 12            # REVISAR: reemplazo/augmentation a mitad de vida
+  ciclos_vida: 6000              # REVISAR: ciclos equivalentes completos
+
+  # Valor de la energía no suministrada. En Colombia, usar los escalones
+  # del costo incremental de racionamiento de la CREG (resolución vigente).
+  voll_usd_mwh: 600.0            # REVISAR: citar la resolución CREG vigente
+
+  # Ingreso perdido por vertimiento (si aplica). 0 = no se penaliza.
+  costo_vertimiento_usd_mwh: 0.0
+
+# ---------------------------------------------------------------------
+# OBJETIVOS DE CONFIABILIDAD para las curvas de Pareto
+# ---------------------------------------------------------------------
+confiabilidad:
+  # Se reportan SIEMPRE las dos métricas, con nombres distintos:
+  #   lpsp            = ENS / demanda total          (definición estándar)
+  #   cobertura_def   = 1 - ENS / energía de déficit (lo que el código
+  #                     anterior llamaba, incorrectamente, "confiabilidad")
+  objetivos_lpsp: [0.10, 0.05, 0.02, 0.01, 0.005, 0.002, 0.001]
+
+# ---------------------------------------------------------------------
+# MODELO SUSTITUTO  kappa(B, M, ...)
+# ---------------------------------------------------------------------
+sustituto:
+  # Rango de LPSP usado para ajustar la ley exponencial LPSP(E) = L0 * exp(-E/kappa)
+  ajuste_lpsp_min: 0.001
+  ajuste_lpsp_max: 0.30
+
+  # Tamaño de planta COMÚN al que se compara kappa entre series.
+  # -----------------------------------------------------------------
+  # Esto importa mucho. Si kappa se calcula en la planta ÓPTIMA de cada
+  # serie, el dimensionamiento de la planta absorbe las diferencias de
+  # intermitencia y kappa queda casi constante entre sitios (CV ~ 0.1):
+  # el modelo sustituto entonces no le gana a predecir la media.
+  #
+  # A planta común (150 MW) la señal reaparece con fuerza:
+  #   CV(kappa) = 0.75,  corr(ln kappa, B) = +0.77,  R2 LOO = 0.70
+  #
+  # Interpretación física: sobredimensionar la planta es un sustituto de
+  # tener almacenamiento. Para aislar el efecto de la intermitencia hay
+  # que comparar los sitios con la misma planta.
+  planta_referencia_mw: 150.0
+
+  # 'factor_planta' se excluye a propósito: es colineal con PSH (ambos
+  # miden el mismo recurso) e infla la varianza de los coeficientes.
+  predictores: ["B", "M", "PSH"]
