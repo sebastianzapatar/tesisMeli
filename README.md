@@ -1,5 +1,5 @@
-![Metodología de la tesis](datos\Figure.png)
-![Metodología de la tesis](datos\Ejemplo.png)
+![Metodología de la tesis](datos/Figure.png)
+![Ejemplo](datos/Ejemplo.png)
 
 # Modelo de intermitencia — dimensionamiento PV + BESS
 
