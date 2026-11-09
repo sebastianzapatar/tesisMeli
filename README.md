@@ -1,4 +1,6 @@
-![Metodología de la tesis](Figure.png)
+![Metodología de la tesis](datos\Figure.png)
+![Metodología de la tesis](datos\Ejemplo.png)
+
 # Modelo de intermitencia — dimensionamiento PV + BESS
 
 Dimensionamiento de plantas solares con almacenamiento a partir de métricas
