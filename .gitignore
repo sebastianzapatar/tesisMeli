@@ -51,6 +51,7 @@ htmlcov/
 # -----------------------------------------------------------------------------
 /codigo/resultados/*.xlsx
 /codigo/resultados/figuras/
+/codigo/figuras_resultados/salida/
 
 # -----------------------------------------------------------------------------
 # Configuración local, credenciales y sistema operativo

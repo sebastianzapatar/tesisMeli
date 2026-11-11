@@ -385,6 +385,33 @@ Por orden de importancia:
   9 páginas A4. Se incrustó DejaVu Sans para fórmulas Unicode y se corrigió
   el ajuste de texto de la tabla de hallazgos.
 
+### 2026-11-04 — Sesión 3 (resultados del artículo 2)
+
+- Qué se hizo:
+  - A1: `intermitencia.resolucion: "diaria"` por defecto; el paso 02 calcula siempre `B_diaria`, `M_diaria`, `B_horaria` y `M_horaria`, y el bucle por hora solo corre en modo horario.
+  - A3: `intermitencia.planta_eventos: "referencia"` (B y M con la planta de 150 MW; `"planta"` conserva lo anterior). Sensibilidad a 100, 125, 150 y 200 MW en `10_sensibilidad_BM_planta.xlsx`.
+  - A4 y A5: `comparar_modelos`, `bootstrap_coeficientes` (por sitios o por bloques), `vif`, `bloques_por_correlacion` y `cv_por_bloques` en `sustituto.py`. Los indicadores simples (`indicadores_simples`, `indice_claridad_diario`, `racha_maxima`) están en `eventos.py`. Como no hay coordenadas, los bloques de la CV agrupan sitios por la correlación de sus anomalías diarias de GHI (6 bloques).
+  - A6: `ajustar_kappa_estirada` y `error_estandar_kappa`.
+  - C3: `ens_minima_prevision_perfecta` (LP). Con objetivo ENS coincide con R1: brecha 2e-11 MWh en 306 ventanas de 60 días.
+  - Costo de la confiabilidad: `costo_anual_bess_por_mwh`, `costo_por_punto_lpsp`, `lpsp_optima_por_voll` y `minimo_costo_para_lpsp`.
+  - Pasos nuevos `10_resultados_articulo2.py` (~45 min), `11_analisis_articulo2.py`, `12_reglas_articulo2.py` y `13_cifras_articulo2.py`. Salidas en `resultados/articulo2/`.
+  - Figuras `figuras_articulo2/fig_a2_7` a `fig_a2_10` (datos reales).
+  - Sección 4 del artículo 2.
+  - Tests: 81 pasan.
+- Resultados (51 series reales, planta de 150 MW):
+  - kappa: mediana 252 MWh, rango 79 a 6875. R² de la ley: mediana 0.895.
+  - Valor de B: R²_LOO pasa de 0.796 (PSH) a 0.888 (PSH+B), con F = 41. El IC bootstrap de beta_B no incluye cero ni por sitios ni por bloques.
+  - B le gana a los indicadores simples y cumple el criterio D5.
+  - M no aporta dado B (p = 0.67).
+  - Costo de cada punto de confiabilidad a planta común: 2.2 MUSD/año (5→2 %) y 8.9 MUSD/año (2→1 %).
+  - Costo marginal de la ENS evitada con batería: entre 1800 y 9000 USD/MWh, es decir, 3 a 16 veces el VoLL.
+  - Reglas: R2 empeora la LPSP entre 1.8 y 3.1 veces; R3 deja la LPSP en 36.6 %.
+- Qué se decidió y por qué:
+  - La ventana de ajuste de kappa sigue en 0.001–0.30, como se había preespecificado. La robustez con LPSP ≤ 10 % y ≤ 5 % no cambia las conclusiones.
+  - Los eventos sobre kt (A2) no se implementaron; kt se usa como indicador competidor. Por eso se ajustó el texto de §3.2.
+- Qué quedó a medias: la Discusión y las Conclusiones del artículo; A2.
+- Siguiente paso concreto: revisar la Sección 4 con el director y escribir la Discusión.
+
 ### Plantilla para la próxima sesión
 
 ```

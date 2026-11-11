@@ -21,7 +21,7 @@ Todos los comandos se corren desde la carpeta `codigo/`.
 cd codigo
 python3.12 -m venv .venv
 ./.venv/bin/python -m pip install -e ".[dev,rapido,notebook]"
-./.venv/bin/python -m pytest tests/ -q      # 31 tests
+./.venv/bin/python -m pytest tests/ -q      # 88 tests
 ```
 
 Python 3.11–3.12. `numba` es opcional: sin él todo funciona, pero la
@@ -39,6 +39,14 @@ simulación es ~100× más lenta.
 ./.venv/bin/python pipeline/05_sustituto.py
 ./.venv/bin/python pipeline/06_figuras.py
 ./.venv/bin/python pipeline/07_informe.py
+
+# artículo 2 y capítulo 4 de la tesis:
+./.venv/bin/python pipeline/10_resultados_articulo2.py   # curvas, kappa, B, M de los 51 sitios
+./.venv/bin/python pipeline/11_analisis_articulo2.py     # modelos sustitutos y validación
+./.venv/bin/python pipeline/12_reglas_articulo2.py       # reglas de operación
+./.venv/bin/python pipeline/13_cifras_articulo2.py       # cifras del texto
+./.venv/bin/python pipeline/14_series_sinteticas.py      # verificación y series barajadas (~1 h)
+./.venv/bin/python pipeline/15_zonas_aplicacion.py       # 5 zonas de aplicación
 ```
 
 Todos los parámetros están en [`codigo/config.yaml`](codigo/config.yaml). **No hay
@@ -64,6 +72,19 @@ abrirlo:
 ```bash
 ./.venv/bin/python -m jupyter lab Modelo_intermitencia_explicado.ipynb
 ```
+
+## Figuras de la tesis
+
+Las figuras de los capítulos 1 a 3 están en [`figuras/`](figuras/README.md):
+una carpeta por capítulo, con **cada figura junto al script que la hace**.
+Para regenerarlas, desde la raíz del repositorio:
+
+```bash
+python figuras/generar_todas.py
+```
+
+Las figuras de resultados (capítulo 4) están en
+[`codigo/figuras_resultados/`](codigo/figuras_resultados/README.md).
 
 ## Resultados principales
 
@@ -105,15 +126,16 @@ batería, así que hay que comparar a planta común para aislar el efecto.
 ```
 Entrega 1 … Entrega 6/       material de cada entrega de la tesis
 articulos/                   artículos publicados (revisión sistemática)
+figuras/                     figuras de los capítulos 1 a 3 y el código que las hace
 codigo/
   config.yaml                todos los parámetros
   src/intermitencia/         el paquete
   pipeline/                  scripts numerados
   tests/                     pytest
   experimentos/              experimentos que no requieren datos
-  figuras_tesis/             figuras de los capítulos de la tesis
+  figuras_resultados/        scripts de las figuras de resultados (capítulo 4)
   legacy/                    los 7 scripts originales, sin modificar
-  resultados/                salidas y figuras
+  resultados/                salidas; resultados/articulo2/ tiene las tablas del capítulo 4
 datos/
   51 series/                 series de GHI (los Excel no se versionan)
   DATOS.md                   procedencia, control de calidad y cómo obtener los datos
