@@ -1,4 +1,34 @@
-# Figuras de la tesis 
+# Figuras de la tesis (capítulos 1 a 3)
+
+Aquí está **cada figura junto al código que la hace**: una carpeta por
+capítulo y, dentro, un script por figura y su resultado en PDF (para LaTeX)
+y PNG (para verla en GitHub). El número del script es el número de la
+figura en la tesis (`fig_3_6_…py` → Figura 3.6).
+
+```
+figuras/
+├── estilo.py               tamaño, márgenes, letra y guardar() comunes a todas
+├── comun_tesis.py          paleta y funciones para esquemas (cajas y flechas)
+├── sitios_ilustrativos.py  sitios sintéticos de las figuras 2.4, 3.3, 3.5–3.7 y 3.10
+├── generar_todas.py        corre todos los scripts (cada uno en su proceso)
+├── copiar_a_tesis.py       copia los PDF a TESIS/Figuras
+├── capitulo_1/             fig_1_1 … fig_1_5  (+ datos/Inversiones.xlsx)
+├── capitulo_2/             fig_2_1 … fig_2_8
+└── capitulo_3/             fig_3_1 … fig_3_10
+```
+
+## Cómo regenerarlas
+
+Desde la raíz del repositorio, con el entorno del proyecto:
+
+```bash
+python figuras/generar_todas.py                          # todas
+python figuras/capitulo_3/fig_3_9_series_barajadas.py    # solo una
+python figuras/copiar_a_tesis.py                         # PDF -> TESIS/Figuras
+```
+
+Las figuras 1.2, 3.4 y 3.9 leen los Excel de `datos/51 series/` (no están
+en GitHub, ver `datos/DATOS.md`). Las demás no necesitan datos externos.
 
 ## Capítulo 1. Introducción
 
@@ -37,3 +67,17 @@
 | 3.8 | [Esquema_validacion](capitulo_3/Esquema_validacion.png) | [`fig_3_8_esquema_validacion.py`](capitulo_3/fig_3_8_esquema_validacion.py) | ninguno |
 | 3.9 | [Series_barajadas](capitulo_3/Series_barajadas.png) | [`fig_3_9_series_barajadas.py`](capitulo_3/fig_3_9_series_barajadas.py) | 51 series de GHI |
 | 3.10 | [fig_reglas_operacion](capitulo_3/fig_reglas_operacion.png) | [`fig_3_10_reglas_operacion.py`](capitulo_3/fig_3_10_reglas_operacion.py) | sitios sintéticos |
+
+## Reglas comunes (`estilo.py`)
+
+| Qué | Valor |
+|---|---|
+| Ancho de toda figura | 6.3 in (≈ `\textwidth`) |
+| Espacio para el eje Y | 0.70 in, igual en todas |
+| Letra | 10 pt |
+| `bbox_inches="tight"` | no se usa (cambiaría el margen de cada figura) |
+
+Para agregar una figura: copiar un script del mismo capítulo, cambiar el
+dibujo y guardar con `guardar(fig, "capitulo_N", "Nombre")`.
+
+Las figuras de resultados (capítulo 4) están en `codigo/figuras_resultados/`.
