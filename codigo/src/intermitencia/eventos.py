@@ -69,6 +69,11 @@ __all__ = [
     "metricas_intermitencia",
     "agregar_memory_fisher",
     "burstiness_legacy_cruces",
+    "serie_diaria_deficit",
+    "eventos_diarios_centrados",
+    "indice_claridad_diario",
+    "racha_maxima",
+    "indicadores_simples",
 ]
 
 
@@ -372,3 +377,77 @@ def serie_diaria_deficit(balance: pd.Series) -> pd.Series:
     if not isinstance(balance.index, pd.DatetimeIndex):
         raise TypeError("Se requiere índice temporal.")
     return (-balance.clip(upper=0.0)).resample("D").sum()
+
+
+# =====================================================================
+# EVENTOS DIARIOS E INDICADORES SIMPLES (artículo 2, tareas A1 y A4)
+# =====================================================================
+
+def eventos_diarios_centrados(balance: pd.Series) -> np.ndarray:
+    """Serie diaria cuyo signo marca los días de evento de déficit.
+
+    Devuelve ``x_j = d_j - mean(d)`` cambiado de signo, donde ``d_j`` es el
+    déficit diario [MWh/día]. Con ``base="deficit"`` y umbral 0, un día es
+    evento cuando ``d_j > mean(d)``: es exactamente la definición de la
+    Sección 3.2 del artículo, y la que usa el paso 02 en modo diario.
+    """
+    d = serie_diaria_deficit(balance)
+    x = -d
+    return (x - x.mean()).to_numpy(dtype=np.float64)
+
+
+def indice_claridad_diario(ghi: pd.Series, percentil: float = 95.0,
+                           ventana_dias: int = 15) -> pd.Series:
+    """Índice de claridad diario kt = GHI diaria / GHI diaria de cielo despejado.
+
+    El cielo despejado se aproxima, para cada día del año, con un
+    percentil alto de la GHI diaria de todos los años en una ventana de
+    ``±ventana_dias`` días (envolvente climatológica). No necesita
+    coordenadas ni un modelo astronómico, y basta para un indicador de
+    persistencia como la autocorrelación de kt.
+    """
+    if not isinstance(ghi.index, pd.DatetimeIndex):
+        raise TypeError("Se requiere índice temporal.")
+    diaria = ghi.resample("D").sum()
+    diaria = diaria[ghi.resample("D").count().eq(24)]
+    doy = diaria.index.dayofyear.to_numpy()
+    valores = diaria.to_numpy(dtype=float)
+    despejado = np.empty(366)
+    for k in range(1, 367):
+        dist = np.abs(doy - k)
+        dist = np.minimum(dist, 366 - dist)
+        sel = valores[dist <= ventana_dias]
+        despejado[k - 1] = np.percentile(sel, percentil) if sel.size else np.nan
+    ref = despejado[doy - 1]
+    return pd.Series(np.where(ref > 0, valores / ref, np.nan), index=diaria.index)
+
+
+def racha_maxima(mascara: np.ndarray) -> int:
+    """Longitud de la corrida más larga de valores True."""
+    m = np.asarray(mascara, dtype=bool)
+    if not m.any():
+        return 0
+    borde = np.diff(np.r_[0, m.astype(np.int8), 0])
+    return int((np.flatnonzero(borde == -1) - np.flatnonzero(borde == 1)).max())
+
+
+def indicadores_simples(ghi: pd.Series, balance: pd.Series) -> dict[str, float]:
+    """Indicadores de variabilidad 'baratos' contra los que se mide B y M.
+
+    * ``cv_energia_diaria``: coeficiente de variación de la energía diaria.
+    * ``racha_max_deficit_dias``: la corrida más larga de días de evento
+      (mismo criterio de evento que B y M).
+    * ``ac1_kt``: autocorrelación de rezago 1 del índice de claridad diario.
+
+    Si B y M no superan a estos indicadores, no aportan nada que no se
+    pueda obtener con estadística elemental (criterio D5 del artículo).
+    """
+    e = ghi.resample("D").sum()
+    e = e[ghi.resample("D").count().eq(24)]
+    x = eventos_diarios_centrados(balance)
+    kt = indice_claridad_diario(ghi)
+    return {
+        "cv_energia_diaria": float(e.std(ddof=1) / e.mean()) if e.mean() > 0 else np.nan,
+        "racha_max_deficit_dias": float(racha_maxima(x < 0)),
+        "ac1_kt": float(kt.autocorr(1)),
+    }

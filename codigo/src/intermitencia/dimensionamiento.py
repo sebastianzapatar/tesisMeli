@@ -36,6 +36,7 @@ __all__ = [
     "frente_pareto",
     "OptimoEconomico",
     "optimizar_sistema",
+    "minimo_costo_para_lpsp",
 ]
 
 
@@ -279,3 +280,54 @@ def optimizar_sistema(
         convergio=bool(r.success),
     )
     return optimo, grilla
+
+
+def minimo_costo_para_lpsp(
+    ghi: np.ndarray,
+    objetivo_lpsp: float,
+    potencias_mw,
+    planta: Planta,
+    bess: Bess,
+    eco: Economia,
+    demanda_mw: float,
+) -> tuple[dict, pd.DataFrame]:
+    """Sistema (P_pv, E_bess) de mínimo costo anual que cumple una LPSP.
+
+    Para cada potencia de la grilla se busca por bisección la batería
+    mínima que alcanza el objetivo y se costea la pareja (CAPEX anualizado
+    + O&M + VoLL·ENS). Se devuelve la pareja más barata y la tabla
+    completa, que es la curva de sustitución planta–batería a confiabilidad
+    constante.
+    """
+    from .pv import GHI_STC
+
+    ghi = np.asarray(ghi, float)
+    n_anios = ghi.size / HORAS_ANIO
+    filas = []
+    for p in potencias_mw:
+        bal = ghi * float(p) * planta.performance_ratio / GHI_STC - demanda_mw
+        cap = capacidad_para_lpsp(bal, objetivo_lpsp, bess, demanda_mw)
+        if not np.isfinite(cap):
+            filas.append({"p_pv_mw": float(p), "e_bess_mwh": np.inf, "alcanzable": False})
+            continue
+        m = evaluar(bal, cap, bess, demanda_mw)
+        c = costear(float(p), cap, cap / bess.duracion_h, m.ens_mwh / n_anios,
+                    m.descarga_mwh / n_anios, m.vertimiento_mwh / n_anios,
+                    demanda_mw * HORAS_ANIO, eco)
+        filas.append({
+            "p_pv_mw": float(p), "e_bess_mwh": cap, "alcanzable": True, "lpsp": m.lpsp,
+            "costo_anual_musd": c.anual_total_usd / 1e6,
+            "costo_capex_opex_musd": (c.anual_capex_usd + c.anual_opex_usd) / 1e6,
+            "costo_ens_musd": c.anual_ens_usd / 1e6,
+            "lcoe_usd_mwh": c.lcoe_usd_mwh, "frac_vertida": m.frac_vertida,
+            "ciclos_por_anio": m.ciclos_por_anio,
+        })
+    tabla = pd.DataFrame(filas)
+    ok = tabla[tabla["alcanzable"]]
+    if ok.empty:
+        return {"objetivo_lpsp": objetivo_lpsp, "alcanzable": False}, tabla
+    mejor = ok.loc[ok["costo_anual_musd"].idxmin()].to_dict()
+    mejor["objetivo_lpsp"] = objetivo_lpsp
+    mejor["en_borde_grilla"] = bool(mejor["p_pv_mw"] in (float(min(potencias_mw)),
+                                                         float(max(potencias_mw))))
+    return mejor, tabla

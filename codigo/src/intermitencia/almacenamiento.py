@@ -40,7 +40,7 @@ import numpy as np
 
 from .config import Bess
 
-__all__ = ["ResultadoSOC", "simular_soc", "NUMBA_ACTIVO"]
+__all__ = ["ResultadoSOC", "simular_soc", "NUMBA_ACTIVO", "ens_minima_prevision_perfecta"]
 
 
 try:  # pragma: no cover - depende del entorno
@@ -294,3 +294,45 @@ def energia_requerida_pico_secuente(balance: np.ndarray) -> float:
     """
     balance = np.ascontiguousarray(np.asarray(balance, dtype=np.float64))
     return float(_nucleo_pico_secuente(-balance))
+
+
+def ens_minima_prevision_perfecta(balance: np.ndarray, capacidad_mwh: float, bess: Bess) -> float:
+    """ENS mínima [MWh] con previsión perfecta, por programación lineal.
+
+    Cota de la Sección 3.10 del artículo 2: el despacho que minimiza la
+    energía no servida conociendo todo el balance futuro. Variables por
+    hora: carga c_t (solo desde el excedente), descarga d_t (solo para
+    cubrir el déficit) y SOC s_t, con los mismos límites de potencia,
+    eficiencias y ventana de SOC que :func:`simular_soc`. Se maximiza
+    la descarga total, que equivale a minimizar la ENS.
+
+    Para este objetivo el despacho directo (cargar todo excedente,
+    descargar ante todo déficit) ya es óptimo: guardar energía para
+    después nunca sirve más déficit que usarla ahora, y la deja expuesta
+    a vertirse si llega otro excedente. El test lo verifica.
+    Pensada para ventanas de semanas; para 27 años usa :func:`simular_soc`.
+    """
+    import scipy.sparse as sp
+    from scipy.optimize import linprog
+
+    bal = np.asarray(balance, dtype=float)
+    T = bal.size
+    e = float(capacidad_mwh)
+    if e <= 0:
+        return float(np.maximum(-bal, 0).sum())
+    p = e / bess.duracion_h if bess.limitar_potencia else np.inf
+    smin, smax = bess.soc_min_frac * e, bess.soc_max_frac * e
+    s0 = float(np.clip(bess.soc_inicial_frac * e, smin, smax))
+    exc, dfc = np.maximum(bal, 0.0), np.maximum(-bal, 0.0)
+    ident = sp.identity(T, format="csr")
+    atras = sp.diags([np.ones(T - 1)], [-1], shape=(T, T), format="csr")
+    a_eq = sp.hstack([-bess.eff_carga * ident, (1.0 / bess.eff_descarga) * ident, ident - atras])
+    b_eq = np.zeros(T)
+    b_eq[0] = s0
+    costo = np.r_[np.zeros(T), -np.ones(T), np.zeros(T)]
+    cotas = ([(0.0, min(p, x)) for x in exc] + [(0.0, min(p, x)) for x in dfc]
+             + [(smin, smax)] * T)
+    r = linprog(costo, A_eq=a_eq, b_eq=b_eq, bounds=cotas, method="highs")
+    if not r.success:
+        raise RuntimeError(f"La programación lineal no convergió: {r.message}")
+    return float(dfc.sum() + r.fun)

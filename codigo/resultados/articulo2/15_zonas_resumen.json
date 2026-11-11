@@ -1,0 +1,8 @@
+{
+  "rmse_ln_PSH": 0.46360808208963483,
+  "rmse_ln_PSH+B": 0.29448931444025955,
+  "rmse_ln_PSH+B+M": 0.29732942557133624,
+  "error_abs_mediano_ln_PSH": 0.2752826684048415,
+  "error_abs_mediano_ln_PSH+B": 0.32128112157375366,
+  "error_abs_mediano_ln_PSH+B+M": 0.31962465850999333
+}

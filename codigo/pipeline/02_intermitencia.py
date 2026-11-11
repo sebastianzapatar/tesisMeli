@@ -19,11 +19,13 @@ import numpy as np
 import pandas as pd
 
 from _comun import cargar_balances, cronometro, guardar, preparar, subtitulo, titulo
+from intermitencia import pv
 from intermitencia.eventos import (
     agregar_memory_fisher,
     burstiness_legacy_cruces,
+    eventos_diarios_centrados,
+    indicadores_simples,
     metricas_intermitencia,
-    serie_diaria_deficit,
 )
 
 
@@ -76,54 +78,58 @@ def main() -> None:
 
     with cronometro("lectura"):
         gen, balance = cargar_balances(cfg)
+    ghi = gen / pv.factor_ghi_a_mw(cfg.planta)
+
+    # Tarea A3: B y M con la MISMA planta que kappa (configurable).
+    if ic.planta_eventos == "referencia":
+        p_ev = float(cfg.sustituto["planta_referencia_mw"])
+        balance = ghi * pv.factor_ghi_a_mw(cfg.planta) * p_ev / cfg.planta.potencia_mw - cfg.demanda_mw
+    else:
+        p_ev = cfg.planta.potencia_mw
+    print(f"Planta de los eventos: {p_ev:.0f} MW ({ic.planta_eventos})")
 
     filas = []
     with cronometro("cálculo"):
         for s in balance.columns:
             b = balance[s]
 
-            # --- método nuevo: eventos de déficit -------------------------
-            if ic.resolucion == "diaria":
-                # Déficit diario: elimina el ciclo diurno determinista, de
-                # modo que B y M miden variabilidad meteorológica.
-                serie = -serie_diaria_deficit(b)
-                serie = serie - serie.mean()
-                arreglo = serie.to_numpy()
-            else:
-                arreglo = b.to_numpy()
+            kw = dict(umbral=ic.umbral_mw, base=ic.base_evento,
+                      min_eventos=ic.min_eventos,
+                      corregir_tamano_finito=ic.corregir_tamano_finito,
+                      metodo_memory=ic.metodo_memory)
 
-            m = metricas_intermitencia(
-                arreglo,
-                umbral=ic.umbral_mw,
-                base=ic.base_evento,
-                min_eventos=ic.min_eventos,
-                corregir_tamano_finito=ic.corregir_tamano_finito,
-                metodo_memory=ic.metodo_memory,
-            )
+            # --- las dos resoluciones se calculan siempre (tarea A1) -------
+            # Diaria: déficit diario centrado; elimina el ciclo diurno, de
+            # modo que B y M miden rachas meteorológicas, no la noche.
+            m_d = metricas_intermitencia(eventos_diarios_centrados(b), **kw)
+            m_h = metricas_intermitencia(b.to_numpy(), **kw)
+            m = m_d if ic.resolucion == "diaria" else m_h
+            m = dict(m)
+            m["B_diaria"], m["M_diaria"] = m_d["B"], m_d["M"]
+            m["n_eventos_diaria"] = m_d["n_eventos"]
+            m["B_horaria"], m["M_horaria"] = m_h["B"], m_h["M"]
+            m["n_eventos_horaria"] = m_h["n_eventos"]
+            m.update(indicadores_simples(ghi[s], b))
 
-            # --- B y M también por hora del día, agregados bien -----------
-            horas = b.index.hour
-            b_h, m_h, n_h = [], [], []
-            for h in range(24):
-                sub = b[horas == h].to_numpy()
-                r = metricas_intermitencia(
-                    sub, umbral=ic.umbral_mw, base=ic.base_evento,
-                    min_eventos=ic.min_eventos,
-                    corregir_tamano_finito=ic.corregir_tamano_finito,
-                    metodo_memory=ic.metodo_memory,
-                )
-                if not np.isnan(r["B"]):
-                    b_h.append(r["B"])
-                    m_h.append(r["M"])
-                    n_h.append(r["n_eventos"])
+            # --- B y M por hora del día: solo tiene sentido en modo horario
+            b_h, m_hh, n_h = [], [], []
+            if ic.resolucion == "horaria":
+                horas = b.index.hour
+                for h in range(24):
+                    r = metricas_intermitencia(b[horas == h].to_numpy(), **kw)
+                    if not np.isnan(r["B"]):
+                        b_h.append(r["B"])
+                        m_hh.append(r["M"])
+                        n_h.append(r["n_eventos"])
 
             m["B_horario_medio"] = float(np.mean(b_h)) if b_h else np.nan
             # M se agrega por Fisher, no aritméticamente
             m["M_horario_fisher"] = (
-                agregar_memory_fisher(np.array(m_h), np.array(n_h))
-                if m_h else np.nan
+                agregar_memory_fisher(np.array(m_hh), np.array(n_h))
+                if m_hh else np.nan
             )
             m["horas_validas"] = len(b_h)
+            m["planta_eventos_mw"] = p_ev
 
             # --- método antiguo, para comparar ---------------------------
             m.update(metricas_legacy_por_serie(b))

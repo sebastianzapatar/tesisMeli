@@ -1,0 +1,11 @@
+{
+  "planta_referencia_mw": 150.0,
+  "c_E_usd_mwh_anio": 62507.68297336755,
+  "n_sitios": 51,
+  "anios": 27.0,
+  "metas_lpsp": [
+    0.05,
+    0.02,
+    0.01
+  ]
+}

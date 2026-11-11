@@ -36,6 +36,9 @@ __all__ = [
     "CostoSistema",
     "costear",
     "costo_marginal_ens_evitada",
+    "costo_anual_bess_por_mwh",
+    "costo_por_punto_lpsp",
+    "lpsp_optima_por_voll",
 ]
 
 HORAS_ANIO = 8760.0
@@ -225,3 +228,64 @@ def capacidad_optima_por_voll(mcae: pd.DataFrame, eco: Economia) -> float:
     if supera.empty:
         return float(mcae["capacidad_mwh"].max())
     return float(supera.iloc[0]["capacidad_mwh"])
+
+
+# =====================================================================
+# COSTO DE CADA PUNTO DE CONFIABILIDAD (artículo 2)
+# =====================================================================
+
+def costo_anual_bess_por_mwh(eco: Economia, duracion_h: float) -> float:
+    """Costo anualizado [USD/año] de 1 MWh de BESS, con su conversión de potencia.
+
+    Incluye el reemplazo dentro de la vida del proyecto, el CRF y el O&M
+    fijo: es la pendiente ``c_E`` del costo del almacenamiento en E.
+    """
+    factor = crf(eco.tasa_descuento, eco.vida_proyecto_anios)
+    reemplazo = _factor_reemplazos(eco.vida_bess_anios, eco.vida_proyecto_anios,
+                                   eco.tasa_descuento)
+    return float(
+        reemplazo * (eco.capex_bess_energia_usd_kwh * 1000.0
+                     + eco.capex_bess_potencia_usd_kw * 1000.0 / duracion_h) * factor
+        + eco.opex_bess_usd_kwh_anio * 1000.0
+    )
+
+
+def costo_por_punto_lpsp(kappa_mwh, lpsp, eco: Economia, duracion_h: float,
+                         demanda_mw: float) -> pd.DataFrame:
+    """Costo marginal de la confiabilidad implícito en la ley exponencial.
+
+    Con ``E* = kappa ln(L0/LPSP)``, ``dE*/dLPSP = -kappa/LPSP``. Entonces:
+
+    * almacenamiento adicional por punto porcentual de LPSP:
+      ``0.01 * kappa / LPSP``  [MWh/pp]
+    * costo anual por punto porcentual: ``c_E * 0.01 * kappa / LPSP``
+    * costo por MWh de ENS evitada: ``c_E * kappa / (LPSP * D_anual)``,
+      que se compara directamente con el VoLL.
+
+    ``L0`` no aparece: el costo del siguiente punto depende solo de kappa
+    y del punto en el que se está. Por eso kappa es el parámetro económico.
+    """
+    k = np.asarray(kappa_mwh, float)
+    l = np.asarray(lpsp, float)
+    c_e = costo_anual_bess_por_mwh(eco, duracion_h)
+    d_anual = demanda_mw * HORAS_ANIO
+    mwh_pp = 0.01 * k / l
+    return pd.DataFrame({
+        "kappa_mwh": np.broadcast_to(k, np.broadcast(k, l).shape).ravel(),
+        "lpsp": np.broadcast_to(l, np.broadcast(k, l).shape).ravel(),
+        "mwh_por_pp": np.ravel(mwh_pp),
+        "usd_anio_por_pp": np.ravel(c_e * mwh_pp),
+        "usd_por_mwh_ens_evitada": np.ravel(c_e * k / (l * d_anual)),
+    })
+
+
+def lpsp_optima_por_voll(kappa_mwh, eco: Economia, duracion_h: float,
+                         demanda_mw: float):
+    """LPSP donde el costo marginal del almacenamiento iguala el VoLL.
+
+    Igualando ``c_E kappa / (LPSP D_anual) = VoLL`` se obtiene
+    ``LPSP_opt = c_E kappa / (VoLL D_anual)``. Por debajo de esa LPSP,
+    cada MWh de ENS evitado con batería cuesta más que su valor.
+    """
+    c_e = costo_anual_bess_por_mwh(eco, duracion_h)
+    return np.asarray(kappa_mwh, float) * c_e / (eco.voll_usd_mwh * demanda_mw * HORAS_ANIO)

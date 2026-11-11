@@ -127,6 +127,10 @@ class Intermitencia:
     min_eventos: int
     corregir_tamano_finito: bool
     metodo_memory: str
+    # "referencia" -> B y M con sustituto.planta_referencia_mw (la misma
+    # planta de kappa; tarea A3). "planta" -> con planta.potencia_mw
+    # (comportamiento anterior).
+    planta_eventos: str = "planta"
 
 
 @dataclass(frozen=True)
