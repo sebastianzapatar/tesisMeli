@@ -20,10 +20,10 @@ Cada figura está en `capitulo_N/` junto al script que la hace. Las que dicen *C
 | 2.2 | [Curva_LPSP_kappa](capitulo_2/Curva_LPSP_kappa.pdf) | [`fig_2_2_curva_lpsp_kappa.py`](capitulo_2/fig_2_2_curva_lpsp_kappa.py) | fórmula |
 | 2.3 | [Plano_BM_conceptual](capitulo_2/Plano_BM_conceptual.pdf) | [`fig_2_3_plano_BM.py`](capitulo_2/fig_2_3_plano_BM.py) | sintéticos |
 | 2.4 | [Efecto_intermitencia_curva](capitulo_2/Efecto_intermitencia_curva.pdf) | [`fig_2_4_efecto_intermitencia_curva.py`](capitulo_2/fig_2_4_efecto_intermitencia_curva.py) | sitios sintéticos |
-| 2.5 | Clasificacion_estudios [1](capitulo_2/Clasificacion_estudios1.pdf), [2](capitulo_2/Clasificacion_estudios2.pdf), [3](capitulo_2/Clasificacion_estudios3.pdf), [4](capitulo_2/Clasificacion_estudios4.pdf) | hecha aparte | cifras del artículo 1 |
+| 2.5 | Clasificacion_estudios [1](capitulo_2/Clasificacion_estudios1.pdf), [2](capitulo_2/Clasificacion_estudios2.pdf), [3](capitulo_2/Clasificacion_estudios3.pdf), [4](capitulo_2/Clasificacion_estudios4.pdf) | Canva | cifras del artículo 1 |
 | 2.6 | [Calidad_metodologica](capitulo_2/Calidad_metodologica.pdf) | [`fig_2_6_calidad_metodologica.py`](capitulo_2/fig_2_6_calidad_metodologica.py) | cifras del artículo 1 |
 | 2.7 | [Escalas_temporales](capitulo_2/Escalas_temporales.pdf) | [`fig_2_7_escalas_temporales.py`](capitulo_2/fig_2_7_escalas_temporales.py) | ninguno |
-| 2.8 | [Marco_conceptual](capitulo_2/Marco_conceptual.pdf) | hecha aparte | ninguno |
+| 2.8 | [Marco_conceptual](capitulo_2/Marco_conceptual.pdf) | Canva | ninguno |
 
 ## Capítulo 3. Metodología
 
