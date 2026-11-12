@@ -83,8 +83,9 @@ Para regenerarlas, desde la raíz del repositorio:
 python figuras/generar_todas.py
 ```
 
-Las figuras de resultados (capítulo 4) están en
-[`codigo/figuras_resultados/`](codigo/figuras_resultados/README.md).
+Las figuras de resultados (capítulo 4) también están en
+[`figuras/capitulo_4/`](figuras/README.md#capítulo-4-resultados): leen las
+tablas de `codigo/resultados/articulo2/` sin volver a simular.
 
 ## Resultados principales
 
@@ -126,14 +127,13 @@ batería, así que hay que comparar a planta común para aislar el efecto.
 ```
 Entrega 1 … Entrega 6/       material de cada entrega de la tesis
 articulos/                   artículos publicados (revisión sistemática)
-figuras/                     figuras de los capítulos 1 a 3 y el código que las hace
+figuras/                     figuras de los capítulos 1 a 4 y el código que las hace
 codigo/
   config.yaml                todos los parámetros
   src/intermitencia/         el paquete
   pipeline/                  scripts numerados
   tests/                     pytest
   experimentos/              experimentos que no requieren datos
-  figuras_resultados/        scripts de las figuras de resultados (capítulo 4)
   legacy/                    los 7 scripts originales, sin modificar
   resultados/                salidas; resultados/articulo2/ tiene las tablas del capítulo 4
 datos/

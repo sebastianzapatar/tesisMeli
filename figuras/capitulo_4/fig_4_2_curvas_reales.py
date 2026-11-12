@@ -1,4 +1,4 @@
-"""Figura — Curvas capacidad–confiabilidad de los 51 sitios (resultado).
+"""Figura 4.2 — Curvas capacidad–confiabilidad de los 51 sitios (resultado).
 
 (a) LPSP frente a la capacidad del BESS para los 51 sitios, a la planta
     común de 150 MW, coloreadas por PSH. Las líneas horizontales marcan
@@ -8,17 +8,22 @@
 
 Datos: pipeline/10_resultados_articulo2.py (10_curvas.csv.gz,
 10_sitios.xlsx, 10_costo_planta_comun.xlsx). NO simula.
-Salida: salida/fig_curvas_reales.pdf
+Salida: capitulo_4/fig_curvas_reales.pdf
 """
 
 from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # figuras/
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import Normalize
 from matplotlib.ticker import LogLocator, NullFormatter, ScalarFormatter
 
-from comun import (AZUL, DEMANDA_MW, GRIS, NARANJA, VERDE, barra_color, etiqueta_panel, formatear_eje,
+from resultados import (AZUL, DEMANDA_MW, GRIS, NARANJA, VERDE, barra_color, etiqueta_panel, formatear_eje,
                    leer_resultado, rejilla, guardar)
 
 METAS = [(0.05, VERDE, "5 %"), (0.02, AZUL, "2 %"), (0.01, NARANJA, "1 %")]
@@ -65,7 +70,7 @@ def main() -> None:
                   menores_x=LogLocator(subs="auto"), menores_y=LogLocator(subs="auto"))
     ax_b.legend(loc="upper left", fontsize=7.5, handletextpad=0.3)
     etiqueta_panel(ax_b, "(b)", debajo=0.55)
-    guardar(fig, "fig_curvas_reales")
+    guardar(fig, "capitulo_4", "fig_curvas_reales")
 
 
 if __name__ == "__main__":

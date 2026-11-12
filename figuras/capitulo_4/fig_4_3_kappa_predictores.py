@@ -1,4 +1,4 @@
-"""Figura — Qué explica kappa en los 51 sitios (resultado).
+"""Figura 4.3 — Qué explica kappa en los 51 sitios (resultado).
 
 (a) ln kappa frente a la PSH, coloreado por B: la PSH fija el nivel.
 (b) Predicción leave-one-out frente a kappa simulado, con PSH sola y
@@ -8,15 +8,20 @@
 
 Residuo parcial: e + beta_j·x_j, con e el residuo del modelo completo;
 su pendiente es el coeficiente de x_j en la regresión múltiple.
-Datos: 10_sitios.xlsx. Salida: salida/fig_kappa_predictores.pdf
+Datos: 10_sitios.xlsx. Salida: capitulo_4/fig_kappa_predictores.pdf
 """
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # figuras/
+
 import matplotlib.pyplot as plt
 import numpy as np
 
-from comun import (AZUL, DEMANDA_MW, GRIS, NARANJA, barra_color, etiqueta_panel, formatear_eje, guardar,
+from resultados import (AZUL, DEMANDA_MW, GRIS, NARANJA, barra_color, etiqueta_panel, formatear_eje, guardar,
                    leer_resultado, rejilla)
 from intermitencia.sustituto import ols
 
@@ -66,7 +71,7 @@ def main() -> None:
     formatear_eje(ax_d, xlabel=r"Simulated $\ln\kappa$", ylabel=r"LOO prediction")
     ax_d.legend(loc="upper left", fontsize=7, handletextpad=0.2)
     etiqueta_panel(ax_d, "(b)", debajo=0.50)
-    guardar(fig, "fig_kappa_predictores")
+    guardar(fig, "capitulo_4", "fig_kappa_predictores")
 
 
 if __name__ == "__main__":

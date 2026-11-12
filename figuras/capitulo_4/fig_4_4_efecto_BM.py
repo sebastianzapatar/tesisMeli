@@ -1,4 +1,4 @@
-"""Figura — Valor incremental de B y M sobre la PSH (resultado).
+"""Figura 4.4 — Valor incremental de B y M sobre la PSH (resultado).
 
 (a) R² leave-one-out de cada especificación de ln kappa (criterio D5):
     PSH sola, PSH con B y/o M, y PSH con los indicadores simples. La
@@ -12,15 +12,20 @@
     en sus percentiles 10, 50 y 90.
 
 Datos: 11_comparacion_modelos.xlsx, 11_bootstrap_coeficientes.xlsx,
-11_efecto_BM.xlsx. Salida: salida/fig_efecto_BM.pdf
+11_efecto_BM.xlsx. Salida: capitulo_4/fig_efecto_BM.pdf
 """
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # figuras/
+
 import numpy as np
 from matplotlib.ticker import NullLocator
 
-from comun import (AZUL, DEMANDA_MW, CFG, GRIS, NARANJA, VERDE, etiqueta_panel, formatear_eje, guardar,
+from resultados import (AZUL, DEMANDA_MW, CFG, GRIS, NARANJA, VERDE, etiqueta_panel, formatear_eje, guardar,
                    leer_resultado, rejilla)
 
 ORDEN = ["PSH", "PSH+CV", "PSH+racha", "PSH+ac1kt", "PSH+M", "PSH+B", "PSH+B+M", "PSH+B+M+ac1kt"]
@@ -88,7 +93,7 @@ def main() -> None:
     ax_c.tick_params(axis="x", which="both", top=False)
     ax_c.legend(loc="upper left", fontsize=7.5)
     etiqueta_panel(ax_c, "(c)", debajo=0.50)
-    guardar(fig, "fig_efecto_BM")
+    guardar(fig, "capitulo_4", "fig_efecto_BM")
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@
     (orden total = observada - todo).
 
 Datos: resultados/articulo2/14_sustitutos_sitios.xlsx (pipeline/14_series_sinteticas.py)
-Salida: salida/capitulo_4/Orden_dias.pdf
+Salida: capitulo_4/Orden_dias.pdf
 """
 
 from __future__ import annotations
@@ -17,17 +17,16 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))   # comun.py (agrega codigo/src y figuras/)
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # figuras/
 
-import comun  # noqa: E402,F401
+import resultados  # noqa: E402,F401
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 from matplotlib.ticker import FixedLocator, NullFormatter  # noqa: E402
 
 import estilo  # noqa: E402
-from comun import guardar  # noqa: E402
-from estilo import etiqueta_panel, formatear_eje  # noqa: E402
+from estilo import etiqueta_panel, formatear_eje, guardar  # noqa: E402
 from intermitencia import Config  # noqa: E402
 
 COL = {"real": "#2A78D6", "mes": "#EB6834", "todo": "#6b6b6b"}
@@ -39,7 +38,7 @@ ALTO, Y0, SEP_H = 2.45, 0.62, 0.85
 def main() -> None:
     estilo.aplicar_estilo()
     cfg = Config.cargar()
-    d = pd.read_excel(cfg.rutas.salida / "articulo2" / "14_sustitutos_sitios.xlsx")
+    d = resultados.leer_resultado("14_sustitutos_sitios.xlsx")
     m = d.groupby(["Serie", "tipo"]).mean(numeric_only=True).unstack("tipo")
     m = m.sort_values(("PSH", "real"), ascending=False)
 
@@ -86,7 +85,7 @@ def main() -> None:
     bx.legend(loc="upper left", fontsize=7.5, frameon=False, handlelength=1.0)
     etiqueta_panel(ax, "(a)", debajo=0.48)
     etiqueta_panel(bx, "(b)", debajo=0.48)
-    guardar(fig, "Orden_dias")
+    guardar(fig, "capitulo_4", "Orden_dias")
 
 
 if __name__ == "__main__":

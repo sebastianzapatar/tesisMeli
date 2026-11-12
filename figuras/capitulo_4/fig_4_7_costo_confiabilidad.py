@@ -1,4 +1,4 @@
-"""Figura — Cuánto cuesta cada punto de confiabilidad (resultado).
+"""Figura 4.7 — Cuánto cuesta cada punto de confiabilidad (resultado).
 
 (a) Costo de cada punto porcentual de LPSP en los tramos 5→2 % y 2→1 %:
     aumento del costo anual de inversión y O&M (CAPEX anualizado + O&M,
@@ -14,10 +14,15 @@
 (d) Potencia FV del sistema de mínimo costo por meta (distribución).
 
 Datos: 10_costo_planta_comun.xlsx, 10_minimo_costo.xlsx, 10_sitios.xlsx,
-10_sustitucion_planta_bateria.csv.gz. Salida: salida/fig_costo_confiabilidad.pdf
+10_sustitucion_planta_bateria.csv.gz. Salida: capitulo_4/fig_costo_confiabilidad.pdf
 """
 
 from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # figuras/
 
 import json
 
@@ -25,7 +30,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import FixedLocator, LogLocator, NullFormatter, NullLocator
 
-from comun import (AZUL, CFG, GRIS, NARANJA, RESULTADOS, VERDE, etiqueta_panel, formatear_eje,
+from resultados import (AZUL, CFG, GRIS, NARANJA, RESULTADOS, VERDE, etiqueta_panel, formatear_eje,
                    guardar, leer_resultado, rejilla)
 
 METAS = [(0.05, VERDE), (0.02, AZUL), (0.01, NARANJA)]
@@ -124,7 +129,7 @@ def main() -> None:
     formatear_eje(ax_d, xlabel="Reliability target LPSP$^*$", ylabel="Least-cost $P_{\\mathrm{PV}}/D$",
                   menores_x=NullLocator())
     etiqueta_panel(ax_d, "(d)", debajo=0.50)
-    guardar(fig, "fig_costo_confiabilidad")
+    guardar(fig, "capitulo_4", "fig_costo_confiabilidad")
 
 
 if __name__ == "__main__":
