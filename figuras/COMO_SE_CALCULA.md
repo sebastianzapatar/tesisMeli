@@ -13,7 +13,7 @@ Hay cuatro tipos de figura:
 
 Parámetros comunes de las simulaciones: demanda plana D = 20 MW, planta
 común de 150 MW (7,5D), PR = 0,80, eficiencia de carga y descarga 0,922,
-SOC entre 20 % y 80 % (60 % de la capacidad nominal es utilizable), relación E/P = 4 h (todo en `codigo/config.yaml`).
+SOC entre 10 % y 90 % (80 % de la capacidad nominal es utilizable), relación E/P = 4 h (todo en `codigo/config.yaml`).
 
 ## Capítulo 1. Introducción
 
@@ -49,7 +49,7 @@ volver a exportar los dos archivos con el mismo nombre.
 - **Figura:** `capitulo_1/Mismo_mes_agrupamiento.pdf` y `.png`
 - **Datos:** sintéticos
 
-Datos sintéticos: dos meses de 30 días con 10 días nublados cada uno, es decir, la misma energía. Generación horaria = 150 MW · 0,80 · índice de claridad (0,78 despejado, 0,40 nublado) · perfil de cielo despejado. En (a) los días nublados van uno cada tres días y en (b) son diez seguidos. Simula hora a hora una batería de 36 h de demanda (720 MWh nominales, 432 MWh utilizables; E/P = 4 h; η = 0,922; SOC entre 20 % y 80 %; empieza en 80 %) con despacho directo y grafica el SOC y la energía no suministrada acumulada.
+Datos sintéticos: dos meses de 30 días con 10 días nublados cada uno, es decir, la misma energía. Generación horaria = 150 MW · 0,80 · índice de claridad (0,78 despejado, 0,40 nublado) · perfil de cielo despejado. En (a) los días nublados van uno cada tres días y en (b) son diez seguidos. Simula hora a hora una batería de 27 h de demanda (540 MWh nominales, 432 MWh utilizables; E/P = 4 h; η = 0,922; SOC entre 10 % y 90 %; empieza en 90 %) con despacho directo y grafica el SOC y la energía no suministrada acumulada.
 
 ### Figura 1.5. Estructura de la tesis
 
@@ -205,7 +205,7 @@ Datos reales. Elige el sitio de PSH mediana (Ibagué), calcula el balance con la
 - **Figura:** `capitulo_3/fig_reglas_operacion.pdf` y `.png`
 - **Datos:** sitio sintético + simulador
 
-Sitio sintético agrupado con una batería de 1000 MWh. Simula tres reglas con `reglas_operacion.simular_regla`: R1 despacho directo, R2 reserva de 40 % del SOC (20 puntos sobre el piso) y R3 descarga solo de 18:00 a 22:00. (a) SOC durante una racha de días de déficit. (b) Energía no suministrada acumulada.
+Sitio sintético agrupado con una batería de 1000 MWh. Simula tres reglas con `reglas_operacion.simular_regla`: R1 despacho directo, R2 reserva de 30 % del SOC (20 puntos sobre el piso) y R3 descarga solo de 18:00 a 22:00. (a) SOC durante una racha de días de déficit. (b) Energía no suministrada acumulada.
 
 ## Capítulo 4. Resultados
 
@@ -261,7 +261,7 @@ y almacenamiento en horas de demanda.
 - **Figura:** `capitulo_4/Zonas_aplicacion.pdf` y `.png`
 - **Datos:** `15_zonas.xlsx`
 
-(a) κ simulado de cada zona frente al κ predicho con los coeficientes del paso 11, sin reajustar: círculo vacío con solo PSH y círculo lleno con PSH + B; la flecha muestra cuánto cambia la predicción al agregar B. El RMSE de ln κ baja de 0,44 a 0,26. (b) E* simulada de cada zona para 5, 2 y 1 %, zonas de mayor a menor PSH.
+(a) κ simulado de cada zona frente al κ predicho con los coeficientes del paso 11, sin reajustar: círculo vacío con solo PSH y círculo lleno con PSH + B; la flecha muestra cuánto cambia la predicción al agregar B. El RMSE de ln κ baja de 0,46 a 0,28. (b) E* simulada de cada zona para 5, 2 y 1 %, zonas de mayor a menor PSH.
 
 ### Figura 4.7. Costo de la confiabilidad
 
@@ -277,5 +277,5 @@ y almacenamiento en horas de demanda.
 - **Figura:** `capitulo_4/Reglas_resultados.pdf` y `.png`
 - **Datos:** `12_reglas.xlsx`, `12_cota_lp.xlsx`, `10_sitios.xlsx`
 
-(a) LPSP de R2 (reserva de 40 % del SOC) y de R3 (descarga solo de 18:00 a 22:00) dividida por la LPSP de R1, con la batería E* de R1 para cada meta; puntos = sitios, barra = mediana (R2: 4,24, 4,93, 2,62; R3: 7,3, 18,3, 36,6). (b) Penalidad de R2 al 5 % frente a B (Spearman ρ = 0,39): la reserva perjudica más donde B es mayor. (c) Energía no servida con R1 frente al programa lineal con previsión perfecta en 306 ventanas de 60 días: todos los puntos sobre la identidad (diferencia máxima ≈ 2·10⁻¹¹ MWh), así que R1 es óptima.
+(a) LPSP de R2 (reserva de 30 % del SOC) y de R3 (descarga solo de 18:00 a 22:00) dividida por la LPSP de R1, con la batería E* de R1 para cada meta; puntos = sitios, barra = mediana (R2: 3,37, 2,38, 1,98; R3: 7,3, 18,3, 36,6). (b) Penalidad de R2 al 5 % frente a B (Spearman ρ = 0,41): la reserva perjudica más donde B es mayor. (c) Energía no servida con R1 frente al programa lineal con previsión perfecta en 306 ventanas de 60 días: todos los puntos sobre la identidad (diferencia máxima ≈ 2·10⁻¹¹ MWh), así que R1 es óptima.
 

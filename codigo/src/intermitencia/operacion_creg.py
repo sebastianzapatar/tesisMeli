@@ -119,8 +119,8 @@ class ParametrosBESS:
     p_mw: float
     eff_carga: float = 0.95
     eff_descarga: float = 0.95
-    soc_min_frac: float = 0.20
-    soc_max_frac: float = 0.80
+    soc_min_frac: float = 0.10
+    soc_max_frac: float = 0.90
     soc_inicial_frac: float = 0.50
     autodescarga_frac_h: float = 0.0
     consumo_aux_frac: float = 0.0   # consumo auxiliar, fracción de P nominal por hora en operación

@@ -82,8 +82,8 @@ bess:
   eff_carga: 0.922
   eff_descarga: 0.922
 
-  soc_min_frac: 0.20         # ventana de operación 20–80 % (profundidad de descarga 60 %)
-  soc_max_frac: 0.80
+  soc_min_frac: 0.10         # ventana de operación 10–90 % (profundidad de descarga 80 %)
+  soc_max_frac: 0.90
   soc_inicial_frac: 0.50     # arranque a media carga (menos sesgo que arrancar vacío)
 
   autodescarga_frac_h: 0.0   # REVISAR: ~2e-5 /h si quieres modelarla
@@ -261,7 +261,7 @@ costo_confiabilidad:
 # lineal, tarea C3) se resuelve en ventanas aleatorias de cada sitio.
 reglas_articulo2:
   reglas: ["R1", "R2", "R3"]
-  soc_res: 0.40              # reserva: 20 puntos de E por encima del piso de 20 %
+  soc_res: 0.30              # reserva: 20 puntos de E por encima del piso de 10 %
   ventana_horaria: [18, 22]
   lp_ventanas_por_sitio: 6
   lp_dias_por_ventana: 60

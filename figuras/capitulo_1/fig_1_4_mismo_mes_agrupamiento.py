@@ -38,11 +38,11 @@ KT_NUBLADO = 0.40
 N_DIAS = 30
 DIAS_NUBLADOS_DISPERSOS = list(range(1, 30, 3))      # 10 días: 2, 5, 8, ..., 29
 DIAS_NUBLADOS_SEGUIDOS = list(range(10, 20))         # 10 días seguidos
-E_HORAS = 36.0             # batería en horas de demanda (720 MWh; 432 MWh útiles con 20–80 %)
+E_HORAS = 27.0             # batería en horas de demanda (540 MWh; 432 MWh útiles con 10–90 %)
 E_P = 4.0                  # relación energía/potencia [h]
 ETA = 0.922                # eficiencia de carga = de descarga (ida y vuelta 0.85)
-SOC_MIN = 0.20             # fracción de E (ventana de operación 20–80 %)
-SOC_MAX = 0.80
+SOC_MIN = 0.10             # fracción de E (ventana de operación 10–90 %)
+SOC_MAX = 0.90
 SOC_INICIAL = SOC_MAX      # el mes empieza con la batería llena
 # ----------------------------------------------------------------------
 

@@ -1,8 +1,8 @@
 {
-  "rmse_ln_PSH": 0.444215578518548,
-  "rmse_ln_PSH+B": 0.2578090973809473,
-  "rmse_ln_PSH+B+M": 0.2566507746485415,
-  "error_abs_mediano_ln_PSH": 0.3189334809201112,
-  "error_abs_mediano_ln_PSH+B": 0.24667692189280732,
-  "error_abs_mediano_ln_PSH+B+M": 0.2767119033090255
+  "rmse_ln_PSH": 0.459334728648278,
+  "rmse_ln_PSH+B": 0.2840667987928003,
+  "rmse_ln_PSH+B+M": 0.2865893344724136,
+  "error_abs_mediano_ln_PSH": 0.2895252038099141,
+  "error_abs_mediano_ln_PSH+B": 0.32713004249448296,
+  "error_abs_mediano_ln_PSH+B+M": 0.32510202894942175
 }
