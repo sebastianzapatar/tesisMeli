@@ -27,7 +27,7 @@ from intermitencia.reglas_operacion import simular_regla
 SITIO = SITIOS[2]           # "Clustered"
 E_MWH = 1000.0              # capacidad fija del BESS para la comparación
 DIA_INICIO, N_DIAS = 1145, 21
-SOC_RES = 0.30
+SOC_RES = 0.40
 VENTANA = (18, 22)
 # (regla, etiqueta, color, estilo de línea, grosor): R1 va más gruesa debajo
 # para que se vea cuando coincide con R2.

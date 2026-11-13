@@ -38,11 +38,12 @@ KT_NUBLADO = 0.40
 N_DIAS = 30
 DIAS_NUBLADOS_DISPERSOS = list(range(1, 30, 3))      # 10 días: 2, 5, 8, ..., 29
 DIAS_NUBLADOS_SEGUIDOS = list(range(10, 20))         # 10 días seguidos
-E_HORAS = 24.0             # batería en horas de demanda (480 MWh)
+E_HORAS = 36.0             # batería en horas de demanda (720 MWh; 432 MWh útiles con 20–80 %)
 E_P = 4.0                  # relación energía/potencia [h]
 ETA = 0.922                # eficiencia de carga = de descarga (ida y vuelta 0.85)
-SOC_MIN = 0.10             # fracción de E
-SOC_INICIAL = 1.0          # el mes empieza con la batería llena
+SOC_MIN = 0.20             # fracción de E (ventana de operación 20–80 %)
+SOC_MAX = 0.80
+SOC_INICIAL = SOC_MAX      # el mes empieza con la batería llena
 # ----------------------------------------------------------------------
 
 HORAS = np.arange(24)
@@ -64,7 +65,7 @@ def simular(gen: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     soc, ens = np.empty(gen.size), np.empty(gen.size)
     for t, p in enumerate(gen):
         if p >= DEMANDA_MW:
-            s = min(s + ETA * min(p - DEMANDA_MW, pmax), e)
+            s = min(s + ETA * min(p - DEMANDA_MW, pmax), SOC_MAX * e)
             ens[t] = 0.0
         else:
             falta = DEMANDA_MW - p

@@ -1,21 +1,19 @@
 # Cómo se calcula cada figura (capítulos 1 a 4)
 
-Casi todas las figuras se hacen con un script de esta carpeta, en `capitulo_N/`,
-y se guardan en la misma carpeta como PDF (y algunas también como PNG). Las
-figuras 1.3, 1.5, 2.1, 2.5 y 2.8 se hicieron aparte y aquí solo está el PDF. Para regenerarlas
+Cada figura se hace con un script de esta carpeta, en `capitulo_N/`, y se
+guarda en la misma carpeta como PDF (para LaTeX) y PNG. Para regenerarlas
 todas, desde la raíz del repositorio: `python figuras/generar_todas.py`.
 
-Hay cinco tipos de figura:
+Hay cuatro tipos de figura:
 
-- **Hechas aparte, sin script** (Canva u otra herramienta): 1.3, 1.5, 2.1, 2.5 y 2.8.
-- **Esquemas y cifras escritas en el script** (no usan datos): 2.6, 2.7, 3.1, 3.2 y 3.8.
+- **Esquemas y cifras escritas en el script** (no usan datos): 1.3, 1.5, 2.1, 2.5, 2.6, 2.7, 2.8, 3.1, 3.2 y 3.8.
 - **Curvas teóricas** (fórmulas, sin simulación): 2.2 y 2.3.
 - **Sitios sintéticos con el simulador del pipeline** (`sitios_ilustrativos.py`): 1.4, 2.4, 3.3, 3.5, 3.6, 3.7 y 3.10.
 - **Datos reales**: 1.1 (IEA), 1.2, 3.4 y 3.9 (series de GHI de `datos/51 series/`).
 
 Parámetros comunes de las simulaciones: demanda plana D = 20 MW, planta
 común de 150 MW (7,5D), PR = 0,80, eficiencia de carga y descarga 0,922,
-SOC entre 10 % y 100 %, relación E/P = 4 h (todo en `codigo/config.yaml`).
+SOC entre 20 % y 80 % (60 % de la capacidad nominal es utilizable), relación E/P = 4 h (todo en `codigo/config.yaml`).
 
 ## Capítulo 1. Introducción
 
@@ -38,12 +36,12 @@ Lee la GHI horaria de Cuestesitas (51 series, ruta de `config.yaml`) y la convie
 ### Figura 1.3. Línea de tiempo de la normativa
 
 - **Hecha en:** Canva (no tiene script)
-- **Figura:** `capitulo_1/Linea_tiempo_normativa.pdf`
+- **Figura:** `capitulo_1/Linea_tiempo_normativa.pdf` y `.png`
 - **Datos:** ninguno
 
-Esquema diseñado a mano en Canva y exportado como PDF. No se genera con
-código. Para cambiarla, editarla en Canva y volver a exportar el PDF con el
-mismo nombre.
+Esquema diseñado a mano en Canva y exportado como PDF y PNG. No se genera con
+código: `generar_todas.py` no la toca. Para cambiarla, editarla en Canva y
+volver a exportar los dos archivos con el mismo nombre.
 
 ### Figura 1.4. Mismo mes, distinto agrupamiento de los días nublados
 
@@ -51,32 +49,30 @@ mismo nombre.
 - **Figura:** `capitulo_1/Mismo_mes_agrupamiento.pdf` y `.png`
 - **Datos:** sintéticos
 
-Datos sintéticos: dos meses de 30 días con 10 días nublados cada uno, es decir, la misma energía. Generación horaria = 150 MW · 0,80 · índice de claridad (0,78 despejado, 0,40 nublado) · perfil de cielo despejado. En (a) los días nublados van uno cada tres días y en (b) son diez seguidos. Simula hora a hora una batería de 24 h de demanda (480 MWh; E/P = 4 h; η = 0,922; SOC mínimo 10 %; empieza llena) con despacho directo y grafica el SOC y la energía no suministrada acumulada.
+Datos sintéticos: dos meses de 30 días con 10 días nublados cada uno, es decir, la misma energía. Generación horaria = 150 MW · 0,80 · índice de claridad (0,78 despejado, 0,40 nublado) · perfil de cielo despejado. En (a) los días nublados van uno cada tres días y en (b) son diez seguidos. Simula hora a hora una batería de 36 h de demanda (720 MWh nominales, 432 MWh utilizables; E/P = 4 h; η = 0,922; SOC entre 20 % y 80 %; empieza en 80 %) con despacho directo y grafica el SOC y la energía no suministrada acumulada.
 
 ### Figura 1.5. Estructura de la tesis
 
-- **Hecha en:** Canva (no tiene script)
-- **Figura:** `capitulo_1/Estructura_tesis.pdf`
+- **Script:** `capitulo_1/fig_1_5_estructura_tesis.py`
+- **Figura:** `capitulo_1/Estructura_tesis.pdf` y `.png`
 - **Datos:** ninguno
 
-Esquema con el formato de etapas: las etapas 1 a 3 de la investigación y la
-etapa 4 con los dos artículos que producen. Para cambiarla, editarla en Canva y
-volver a exportar el PDF con el mismo nombre.
+Esquema sin datos con el formato de etapas: tres paneles a la izquierda (Stage 1 a 3, cada uno con pestaña azul, título y descripción) y la etapa 4 a la derecha con los dos artículos. Las líneas muestran de qué etapas sale cada artículo. Textos en `ETAPAS`, `ETAPA_4` y `ARTICULOS`.
 
 ## Capítulo 2. Marco teórico y revisión
 
 ### Figura 2.1. Diagrama PRISMA de la revisión
 
-- **Hecha aparte** (no tiene script)
-- **Figura:** `capitulo_2/PRISMA.pdf`
+- **Script:** `capitulo_2/fig_2_1_prisma.py`
+- **Figura:** `capitulo_2/PRISMA_revision.pdf` y `.png`
 - **Datos:** cifras del artículo 1
 
-Diagrama PRISMA de la revisión sistemática con las cifras de Tuirán et al. (2026): 348 registros, 81 duplicados, 267 tamizados, 194 excluidos, 73 evaluados, 37 excluidos y 36 incluidos.
+Diagrama PRISMA dibujado con cajas y flechas. Las cifras (348 registros, 81 duplicados, 267 tamizados, 194 excluidos, 73 evaluados, 37 excluidos y 36 incluidos) están en el diccionario `NUMEROS`, tomadas de Tuirán et al. (2026).
 
 ### Figura 2.2. Forma de la curva capacidad–confiabilidad y κ
 
 - **Script:** `capitulo_2/fig_2_2_curva_lpsp_kappa.py`
-- **Figura:** `capitulo_2/Curva_LPSP_kappa.pdf`
+- **Figura:** `capitulo_2/Curva_LPSP_kappa.pdf` y `.png`
 - **Datos:** fórmula
 
 Curvas analíticas, sin simulación: LPSP(E) = L_0 · e^(−E/κ) con L_0 = 0,30 y κ = 6, 12 y 24 h. (a) Escala lineal, con κ marcado donde la LPSP cae a L_0/e. (b) Escala logarítmica: rectas de pendiente −1/κ, con los puntos E* = κ · ln(L_0/LPSP*) para 5, 2 y 1 %. (c) E* frente a la meta.
@@ -84,7 +80,7 @@ Curvas analíticas, sin simulación: LPSP(E) = L_0 · e^(−E/κ) con L_0 = 0,30
 ### Figura 2.3. Qué miden B y M
 
 - **Script:** `capitulo_2/fig_2_3_plano_BM.py`
-- **Figura:** `capitulo_2/Plano_BM_conceptual.pdf`
+- **Figura:** `capitulo_2/Plano_BM_conceptual.pdf` y `.png`
 - **Datos:** sintéticos
 
 Genera cuatro secuencias de 4000 intervalos con media 10: regular (10 ± 1), Poisson (exponencial), ráfagas sin memoria (20 % de intervalos largos) y ráfagas con memoria (cadena de Markov de dos estados con la misma proporción). Para cada una calcula B = (σ − μ)/(σ + μ) y M, la correlación entre intervalos consecutivos, y las ubica en el plano B–M. Semilla fija (7).
@@ -92,23 +88,23 @@ Genera cuatro secuencias de 4000 intervalos con media 10: regular (10 ± 1), Poi
 ### Figura 2.4. Efecto de la intermitencia en la curva
 
 - **Script:** `capitulo_2/fig_2_4_efecto_intermitencia_curva.py`
-- **Figura:** `capitulo_2/Efecto_intermitencia_curva.pdf`
+- **Figura:** `capitulo_2/Efecto_intermitencia_curva.pdf` y `.png`
 - **Datos:** sitios sintéticos + simulador
 
 Dos sitios sintéticos de `sitios_ilustrativos.py` con 30 % de días nublados: dispersos (δ = 0) y agrupados (δ = 0,25, q = 0,97). Genera 27 años de GHI, calcula el balance con la planta de 150 MW y la demanda de 20 MW, y simula la batería con el simulador del pipeline (`confiabilidad.evaluar`) de 0 a 6000 MWh cada 75. (a) Días de déficit de un año. (b) LPSP frente a la capacidad y κ ajustado (`sustituto.ajustar_kappa`). (c) E* para cada meta.
 
 ### Figura 2.5. Clasificación de los 36 estudios
 
-- **Hecha aparte** (no tiene script)
-- **Figura:** `capitulo_2/Clasificacion_estudios1.pdf` a `Clasificacion_estudios4.pdf`
+- **Script:** `capitulo_2/fig_2_5_clasificacion_estudios.py`
+- **Figura:** `capitulo_2/Clasificacion_estudios.pdf` y `.png`
 - **Datos:** cifras del artículo 1
 
-Número de estudios en cada categoría de la clasificación de Tuirán et al. (2026), sobre los 36 estudios incluidos.
+Barras horizontales con el número de estudios en cada categoría: representación del fenómeno FV, métrica de decisión y horizonte de simulación. Las cifras de Tuirán et al. (2026) están en `REPRESENTACION`, `METRICAS` y `HORIZONTES`; el total es 36.
 
 ### Figura 2.6. Calidad metodológica de los estudios
 
 - **Script:** `capitulo_2/fig_2_6_calidad_metodologica.py`
-- **Figura:** `capitulo_2/Calidad_metodologica.pdf`
+- **Figura:** `capitulo_2/Calidad_metodologica.pdf` y `.png`
 - **Datos:** cifras del artículo 1
 
 Barras apiladas: para cada criterio Q1–Q10, el porcentaje de los 36 estudios que cumple, cumple en parte o no cumple (número de estudios / 36 · 100). Las cifras están en `CRITERIOS`.
@@ -116,18 +112,18 @@ Barras apiladas: para cada criterio Q1–Q10, el porcentaje de los 36 estudios q
 ### Figura 2.7. Escalas temporales de la variabilidad FV
 
 - **Script:** `capitulo_2/fig_2_7_escalas_temporales.py`
-- **Figura:** `capitulo_2/Escalas_temporales.pdf`
+- **Figura:** `capitulo_2/Escalas_temporales.pdf` y `.png`
 - **Datos:** ninguno
 
 Esquema conceptual sobre un eje de tiempo logarítmico: cada fila es un fenómeno con el rango de duraciones en que actúa y el criterio de dimensionamiento que suele determinar. No usa datos; se edita en `FILAS`.
 
 ### Figura 2.8. Marco conceptual
 
-- **Hecha aparte** (no tiene script en el repositorio)
-- **Figura:** `capitulo_2/Marco_conceptual.pdf`
+- **Script:** `capitulo_2/fig_2_8_marco_conceptual.py`
+- **Figura:** `capitulo_2/Marco_conceptual.pdf` y `.png`
 - **Datos:** ninguno
 
-Esquema sin datos: PSH, B y M actúan sobre el déficit acumulado, que fija la curva capacidad–confiabilidad (κ), de la que salen RQ1 y RQ2, con las hipótesis H1–H3.
+Esquema sin datos: PSH, B y M actúan sobre el déficit acumulado, que fija la curva capacidad–confiabilidad (κ), de la que salen RQ1 y RQ2, con las hipótesis H1–H3. Se edita en `BLOQUES` y `FLECHAS`.
 
 ## Capítulo 3. Metodología
 
@@ -209,7 +205,7 @@ Datos reales. Elige el sitio de PSH mediana (Ibagué), calcula el balance con la
 - **Figura:** `capitulo_3/fig_reglas_operacion.pdf` y `.png`
 - **Datos:** sitio sintético + simulador
 
-Sitio sintético agrupado con una batería de 1000 MWh. Simula tres reglas con `reglas_operacion.simular_regla`: R1 despacho directo, R2 reserva de 30 % del SOC y R3 descarga solo de 18:00 a 22:00. (a) SOC durante una racha de días de déficit. (b) Energía no suministrada acumulada.
+Sitio sintético agrupado con una batería de 1000 MWh. Simula tres reglas con `reglas_operacion.simular_regla`: R1 despacho directo, R2 reserva de 40 % del SOC (20 puntos sobre el piso) y R3 descarga solo de 18:00 a 22:00. (a) SOC durante una racha de días de déficit. (b) Energía no suministrada acumulada.
 
 ## Capítulo 4. Resultados
 
@@ -265,7 +261,7 @@ y almacenamiento en horas de demanda.
 - **Figura:** `capitulo_4/Zonas_aplicacion.pdf` y `.png`
 - **Datos:** `15_zonas.xlsx`
 
-(a) κ simulado de cada zona frente al κ predicho con los coeficientes del paso 11, sin reajustar: círculo vacío con solo PSH y círculo lleno con PSH + B; la flecha muestra cuánto cambia la predicción al agregar B. El RMSE de ln κ baja de 0,46 a 0,29. (b) E* simulada de cada zona para 5, 2 y 1 %, zonas de mayor a menor PSH.
+(a) κ simulado de cada zona frente al κ predicho con los coeficientes del paso 11, sin reajustar: círculo vacío con solo PSH y círculo lleno con PSH + B; la flecha muestra cuánto cambia la predicción al agregar B. El RMSE de ln κ baja de 0,44 a 0,26. (b) E* simulada de cada zona para 5, 2 y 1 %, zonas de mayor a menor PSH.
 
 ### Figura 4.7. Costo de la confiabilidad
 
@@ -281,5 +277,5 @@ y almacenamiento en horas de demanda.
 - **Figura:** `capitulo_4/Reglas_resultados.pdf` y `.png`
 - **Datos:** `12_reglas.xlsx`, `12_cota_lp.xlsx`, `10_sitios.xlsx`
 
-(a) LPSP de R2 (reserva de 30 % del SOC) y de R3 (descarga solo de 18:00 a 22:00) dividida por la LPSP de R1, con la batería E* de R1 para cada meta; puntos = sitios, barra = mediana (R2: 3,08, 2,05, 1,81; R3: 7,3, 18,3, 36,6). (b) Penalidad de R2 al 5 % frente a B (Spearman ρ = 0,42): la reserva perjudica más donde B es mayor. (c) Energía no servida con R1 frente al programa lineal con previsión perfecta en 306 ventanas de 60 días: todos los puntos sobre la identidad (diferencia máxima ≈ 2·10⁻¹¹ MWh), así que R1 es óptima.
+(a) LPSP de R2 (reserva de 40 % del SOC) y de R3 (descarga solo de 18:00 a 22:00) dividida por la LPSP de R1, con la batería E* de R1 para cada meta; puntos = sitios, barra = mediana (R2: 4,24, 4,93, 2,62; R3: 7,3, 18,3, 36,6). (b) Penalidad de R2 al 5 % frente a B (Spearman ρ = 0,39): la reserva perjudica más donde B es mayor. (c) Energía no servida con R1 frente al programa lineal con previsión perfecta en 306 ventanas de 60 días: todos los puntos sobre la identidad (diferencia máxima ≈ 2·10⁻¹¹ MWh), así que R1 es óptima.
 
